@@ -12,25 +12,25 @@ class Node:
         self.depth = d
         self.cost = c
 
-fileName = sys.argv[1]
-puzzleData = list()
-with open(str(fileName)) as file:
-    puzzleList = f.readlines().split()
-
 def initialize(p):
-    size = p[0]
-    maxDepth = p[1]
-    maxLength = p[2]
+    size = int(p[0])
+    maxDepth = int(p[1])
+    maxLength = int(p[2])
     initialState = p[3]
 
     index = 0
-    global M
     M = np.empty([size, size], dtype=int)
-    for i in M:
-        for j in M[i]:
-            M[i,j] = initialState[index]
+    for i in range(len(M)):
+        for j in range(len(M[i])):
+            M[i,j] = int(initialState[index])
             index += 1
 
-for p in puzzleList:
+fileName = sys.argv[1]
+puzzleData = list()
+with open(str(fileName)) as file:
+    puzzleData = file.readlines()
+
+for p in puzzleData:
+    p = p.split()
     initialize(p)
-    solve(p)
+    #solve(p)
