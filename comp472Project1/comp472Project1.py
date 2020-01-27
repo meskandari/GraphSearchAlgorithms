@@ -34,3 +34,5 @@ for p in puzzleData:
     p = p.split()
     initialize(p)
     #solve(p)
+
+    # test for merge 
