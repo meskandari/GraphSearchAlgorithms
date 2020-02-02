@@ -42,6 +42,7 @@ class Puzzle_Engine:
         self.openList = deque()
         self.openList.append(self.initialNode)
         print(self.initialNode.goalStateTest(self.size))
+        #test
 
    
         
