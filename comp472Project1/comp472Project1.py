@@ -50,7 +50,13 @@ class Node:
             else:
                 self.currentState[row+1][col]=flip(self.currentState[row+1][col])
         except IndexError:
-            print("One or more specified indices are out of bounds for Puzzle.moveTouch(self, givenRow, givenColumn)")
+            print("One or more specified indices are out of bounds for Node.moveTouch(self, givenRow, givenColumn)")
+
+    def printArray(self):
+        flat = np.ravel(self.currentState)
+        for i in flat:
+            print(i,end =" ")
+        print()
 
 class Puzzle:
     def __init__(self, data):
