@@ -85,7 +85,7 @@ class Puzzle_Util:
         #initialize search result coordinates
         i,j=0,0
         #run search for value
-        searchRows,searchCols=np.where(arr == 1)
+        searchRows,searchCols=np.where(arr == 0)
         #iterate through result to spit out first result
         for index,value in enumerate(searchRows):
             if(searchRows[index]>row):
