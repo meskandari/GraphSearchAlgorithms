@@ -6,15 +6,59 @@ class State:
     def __init__(self, M):
         self.state = M
 
-# unused at the moment
-class Node:
-    def __init__(self, p, s, d, c):
-        self.parent = p
-        self.state = s
-        self.depth = d
-        self.cost = c
+
+
+# each node representation for DFS 
+class Node_dfs:
+
+    def __init__(self, p_label,size, stateSrt):
+        self.parent_label = p_label
+        self.size = size
+        self.state_as_Matrix = np.empty([self.size, self.size], dtype=int)
+        index = 0
+        for i in range(len(self.state_as_Matrix)):
+            for j in range(len(self.state_as_Matrix[i])):
+                self.state_as_Matrix[i,j] = int(stateSrt[index])
+                index += 1
+
+    def goalStateTest(self ,size):
+        b = np.zeros(shape = (size, size), dtype = 'int')
+        return (np.array_equal(b , self.state_as_Matrix))
+        
+    
+
+class Puzzle_Engine:
+       
+    # Initializer / Instance Attributes
+    def __init__(self, data):
+        self.size = int(data[0])
+        self.maxDepth = int(data[1])
+        self.maxLength = int(data[2])
+        self.initialState = data[3]
+        self.currentDepth = 1;
+        self.closeList = list()
+        self.initialNode = Node_dfs(str(0),self.size,data[3])
+        self.openList = deque()
+        self.openList.append(self.initialNode)
+        bool1= self.initialNode.goalStateTest(self.size)
+
+   
+        
+
+class Puzzle_Util:
+
+    def __init__(self):
+        pass
+
+     # instance method to generate node labels
+    @staticmethod
+    def generateNodeLabel(row , col):
+        label_str = "".join([Row_Label(row).name, str(col+1)])
+        return(label_str)
+
 
 class Puzzle:
+   
     def __init__(self, data):
         self.size = int(data[0])
         self.maxDepth = int(data[1])
@@ -76,4 +120,5 @@ with open(str(fileName)) as file:
 for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
-    print(p.getNeighbours(2, 2))
+    my_puzzle = Puzzle_Engine(data)
+    print(p.getNeighbours(0, 0))
