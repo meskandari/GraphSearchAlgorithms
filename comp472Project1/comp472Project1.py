@@ -52,8 +52,21 @@ class Node:
         except IndexError:
             print("One or more specified indices are out of bounds for Node.moveTouch(self, givenRow, givenColumn)")
 
-    def printArray(self):
-        flat = np.ravel(self.currentState)
+
+
+class Puzzle_Util:
+
+    def __init__(self):
+        pass
+
+     # instance method to generate node labels
+    @staticmethod
+    def generateNodeLabel(row , col):
+        label_str = "".join([Row_Label(row).name, str(col+1)])
+        return(label_str)
+
+    def printArray(arr):
+        flat = np.ravel(arr)
         for i in flat:
             print(i,end =" ")
         print()
@@ -63,6 +76,10 @@ class Node:
             return 1
         else:
             return 0
+
+
+
+
 
 class Puzzle:
     def __init__(self, data):
