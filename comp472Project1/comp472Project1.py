@@ -58,6 +58,12 @@ class Node:
             print(i,end =" ")
         print()
 
+    def flip(value):
+        if (value==0):
+            return 1
+        else:
+            return 0
+
 class Puzzle:
     def __init__(self, data):
         self.size = int(data[0])
