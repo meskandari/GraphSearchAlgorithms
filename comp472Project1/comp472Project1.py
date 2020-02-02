@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+from collections import deque
 
 # unused at the moment
 class State:
