@@ -41,7 +41,7 @@ class Puzzle_Engine:
         self.initialNode = Node_dfs(str(0),self.size,data[3])
         self.openList = deque()
         self.openList.append(self.initialNode)
-        bool1= self.initialNode.goalStateTest(self.size)
+        print(self.initialNode.goalStateTest(self.size))
 
    
         
