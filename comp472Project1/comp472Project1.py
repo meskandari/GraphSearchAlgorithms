@@ -77,7 +77,36 @@ class Puzzle_Util:
         else:
             return 0
 
-
+    def evaluateState(arr,position):
+        #extract row and col index
+        location = position.split(",")
+        row=int(location[0])
+        col=int(location[1])
+        #initialize search result coordinates
+        i,j=0,0
+        #run search for value
+        searchRows,searchCols=np.where(arr == 1)
+        #iterate through result to spit out first result
+        for index,value in enumerate(searchRows):
+            if(searchRows[index]>row):
+                #print(searchRows[index])
+                i=searchRows[index]
+                j=searchCols[index]
+                #print("X: " + str(searchRows[index]) + " Y: " + str(searchCols[index]))
+                break
+            if(searchRows[index]==row):
+                #print(searchRows[index])            
+                if(searchCols[index]>col):
+                    i=searchRows[index]
+                    j=searchCols[index]
+                    #print("X: " + str(searchRows[index]) + " Y: " + str(searchCols[index]))
+                    break
+                else:
+                    continue
+        output=list()
+        output.append(i)
+        output.append(j)
+        return output
 
 
 
