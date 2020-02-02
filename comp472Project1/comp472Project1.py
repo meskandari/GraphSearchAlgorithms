@@ -14,6 +14,44 @@ class Node:
         self.depth = d
         self.cost = c
 
+
+    def moveTouch(self,givenRow, givenColumn):
+        try:
+            upper_bound=self.size-1
+            #print("Upper bound index is " + str(upper_bound)) -- DEGUG LINE
+            row=int(givenRow)
+            col=int(givenColumn)
+
+            #FlIP LOCATION
+            self.currentState[row][col]=flip(self.currentState[row][col])
+
+            #FLIP LEFT - col axis
+            if((col-1)<0):
+                '''do nothing'''
+            else:
+                self.currentState[row][col-1]=flip(self.currentState[row][col-1])
+
+
+            #FLIP RIGHT - col axis
+            if((col+1)>upper_bound):
+                '''do nothing'''
+            else:
+                self.currentState[row][col+1]=flip(self.currentState[row][col+1])
+
+            #FLIP UP - row axis
+            if((row-1)<0):
+                '''do nothing'''
+            else:
+                self.currentState[row-1][col]=flip(self.currentState[row-1][col])
+
+            #FLIP DOWN - row axis
+            if((row+1)>upper_bound):
+                '''do nothing'''
+            else:
+                self.currentState[row+1][col]=flip(self.currentState[row+1][col])
+        except IndexError:
+            print("One or more specified indices are out of bounds for Puzzle.moveTouch(self, givenRow, givenColumn)")
+
 class Puzzle:
     def __init__(self, data):
         self.size = int(data[0])
@@ -68,42 +106,7 @@ class Puzzle:
             return None
         return self.currentState.take(indices)
 
-    def moveTouch(self,givenRow, givenColumn):
-        try:
-            upper_bound=self.size-1
-            #print("Upper bound index is " + str(upper_bound)) -- DEGUG LINE
-            row=int(givenRow)
-            col=int(givenColumn)
 
-            #FlIP LOCATION
-            self.currentState[row][col]=flip(self.currentState[row][col])
-
-            #FLIP LEFT - col axis
-            if((col-1)<0):
-                '''do nothing'''
-            else:
-                self.currentState[row][col-1]=flip(self.currentState[row][col-1])
-
-
-            #FLIP RIGHT - col axis
-            if((col+1)>upper_bound):
-                '''do nothing'''
-            else:
-                self.currentState[row][col+1]=flip(self.currentState[row][col+1])
-
-            #FLIP UP - row axis
-            if((row-1)<0):
-                '''do nothing'''
-            else:
-                self.currentState[row-1][col]=flip(self.currentState[row-1][col])
-
-            #FLIP DOWN - row axis
-            if((row+1)>upper_bound):
-                '''do nothing'''
-            else:
-                self.currentState[row+1][col]=flip(self.currentState[row+1][col])
-        except IndexError:
-            print("One or more specified indices are out of bounds for Puzzle.moveTouch(self, givenRow, givenColumn)")
 
 
 fileName = sys.argv[1]
