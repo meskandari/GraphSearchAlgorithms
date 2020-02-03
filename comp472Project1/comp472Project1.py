@@ -14,6 +14,102 @@ class Node:
         self.depth = d
         self.cost = c
 
+
+    def moveTouch(self,givenRow, givenColumn):
+        try:
+            upper_bound=self.size-1
+            #print("Upper bound index is " + str(upper_bound)) -- DEGUG LINE
+            row=int(givenRow)
+            col=int(givenColumn)
+
+            #FlIP LOCATION
+            self.currentState[row][col]=flip(self.currentState[row][col])
+
+            #FLIP LEFT - col axis
+            if((col-1)<0):
+                '''do nothing'''
+            else:
+                self.currentState[row][col-1]=flip(self.currentState[row][col-1])
+
+
+            #FLIP RIGHT - col axis
+            if((col+1)>upper_bound):
+                '''do nothing'''
+            else:
+                self.currentState[row][col+1]=flip(self.currentState[row][col+1])
+
+            #FLIP UP - row axis
+            if((row-1)<0):
+                '''do nothing'''
+            else:
+                self.currentState[row-1][col]=flip(self.currentState[row-1][col])
+
+            #FLIP DOWN - row axis
+            if((row+1)>upper_bound):
+                '''do nothing'''
+            else:
+                self.currentState[row+1][col]=flip(self.currentState[row+1][col])
+        except IndexError:
+            print("One or more specified indices are out of bounds for Node.moveTouch(self, givenRow, givenColumn)")
+
+
+
+class Puzzle_Util:
+
+    def __init__(self):
+        pass
+
+     # instance method to generate node labels
+    @staticmethod
+    def generateNodeLabel(row , col):
+        label_str = "".join([Row_Label(row).name, str(col+1)])
+        return(label_str)
+
+    def printArray(arr):
+        flat = np.ravel(arr)
+        for i in flat:
+            print(i,end =" ")
+        print()
+
+    def flip(value):
+        if (value==0):
+            return 1
+        else:
+            return 0
+
+    def evaluateState(arr,position):
+        #extract row and col index
+        location = position.split(",")
+        row=int(location[0])
+        col=int(location[1])
+        #initialize search result coordinates
+        i,j=0,0
+        #run search for value
+        searchRows,searchCols=np.where(arr == 0)
+        #iterate through result to spit out first result
+        for index,value in enumerate(searchRows):
+            if(searchRows[index]>row):
+                #print(searchRows[index])
+                i=searchRows[index]
+                j=searchCols[index]
+                #print("X: " + str(searchRows[index]) + " Y: " + str(searchCols[index]))
+                break
+            if(searchRows[index]==row):
+                #print(searchRows[index])            
+                if(searchCols[index]>col):
+                    i=searchRows[index]
+                    j=searchCols[index]
+                    #print("X: " + str(searchRows[index]) + " Y: " + str(searchCols[index]))
+                    break
+                else:
+                    continue
+        output=list()
+        output.append(i)
+        output.append(j)
+        return output
+
+
+
 class Puzzle:
     def __init__(self, data):
         self.size = int(data[0])
@@ -67,6 +163,9 @@ class Puzzle:
             print("One or more specified indices are out of bounds for Puzzle.getNeighbours(row, column)")
             return None
         return self.currentState.take(indices)
+
+
+
 
 fileName = sys.argv[1]
 puzzleData = list()
