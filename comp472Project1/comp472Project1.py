@@ -3,56 +3,27 @@ import numpy as np
 
 # unused at the moment
 class State:
-    def __init__(self, M):
-        self.state = M
+    def __init__(self, state):
+        self.state = state
 
-# unused at the moment
 class Node:
-    def __init__(self, p, s, d, c):
-        self.parent = p
-        self.state = s
-        self.depth = d
-        self.cost = c
+    def __init__(self, parent, index, state, depth, cost):
+        self.parent = parent
+        self.index = index
+        self.state = state
+        self.depth = depth
+        self.cost = cost
+        self.children = list()
 
-
-    def moveTouch(self,givenRow, givenColumn):
-        try:
-            upper_bound=self.size-1
-            #print("Upper bound index is " + str(upper_bound)) -- DEGUG LINE
-            row=int(givenRow)
-            col=int(givenColumn)
-
-            #FlIP LOCATION
-            self.currentState[row][col]=flip(self.currentState[row][col])
-
-            #FLIP LEFT - col axis
-            if((col-1)<0):
-                '''do nothing'''
-            else:
-                self.currentState[row][col-1]=flip(self.currentState[row][col-1])
-
-
-            #FLIP RIGHT - col axis
-            if((col+1)>upper_bound):
-                '''do nothing'''
-            else:
-                self.currentState[row][col+1]=flip(self.currentState[row][col+1])
-
-            #FLIP UP - row axis
-            if((row-1)<0):
-                '''do nothing'''
-            else:
-                self.currentState[row-1][col]=flip(self.currentState[row-1][col])
-
-            #FLIP DOWN - row axis
-            if((row+1)>upper_bound):
-                '''do nothing'''
-            else:
-                self.currentState[row+1][col]=flip(self.currentState[row+1][col])
-        except IndexError:
-            print("One or more specified indices are out of bounds for Node.moveTouch(self, givenRow, givenColumn)")
-
-
+    def generateChildren(self, max):
+        for i in range(max):
+            if(i != self.index):
+                s = np.array(self.state)
+                coords = np.unravel_index(i, s.shape)
+                s = Puzzle_Util.moveTouch(s, s.shape[0], coords[0], coords[1])
+                # cost + 1 for now
+                n = Node(self, i, s, self.depth + 1, self.cost + 1)
+                self.children.append(n)
 
 class Puzzle_Util:
 
@@ -71,11 +42,49 @@ class Puzzle_Util:
             print(i,end =" ")
         print()
 
+    @staticmethod
     def flip(value):
-        if (value==0):
-            return 1
-        else:
-            return 0
+        return 1 if value == 0 else 0
+
+    @staticmethod
+    def moveTouch(state, size, givenRow, givenColumn):
+        try:
+            upper_bound=size-1
+            #print("Upper bound index is " + str(upper_bound)) -- DEGUG LINE
+            row=int(givenRow)
+            col=int(givenColumn)
+
+            #FlIP LOCATION
+            state[row][col]=Puzzle_Util.flip(state[row][col])
+
+            #FLIP LEFT - col axis
+            if((col-1)<0):
+                '''do nothing'''
+            else:
+                state[row][col-1]=Puzzle_Util.flip(state[row][col-1])
+
+
+            #FLIP RIGHT - col axis
+            if((col+1)>upper_bound):
+                '''do nothing'''
+            else:
+                state[row][col+1]=Puzzle_Util.flip(state[row][col+1])
+
+            #FLIP UP - row axis
+            if((row-1)<0):
+                '''do nothing'''
+            else:
+                state[row-1][col]=Puzzle_Util.flip(state[row-1][col])
+
+            #FLIP DOWN - row axis
+            if((row+1)>upper_bound):
+                '''do nothing'''
+            else:
+                state[row+1][col]=Puzzle_Util.flip(state[row+1][col])
+
+            return state
+        except IndexError:
+            print("One or more specified indices are out of bounds for Node.moveTouch(self, givenRow, givenColumn)")
 
     def evaluateState(arr,position):
         #extract row and col index
@@ -108,8 +117,6 @@ class Puzzle_Util:
         output.append(j)
         return output
 
-
-
 class Puzzle:
     def __init__(self, data):
         self.size = int(data[0])
@@ -126,6 +133,7 @@ class Puzzle:
         
         self.initialState = M
         self.currentState = M
+        self.root = Node(None, None, self.initialState, 1, 0)
 
         # construct mask matrix
         self.mask = np.empty([self.size+2, self.size+2], dtype=int)
@@ -164,15 +172,21 @@ class Puzzle:
             return None
         return self.currentState.take(indices)
 
-
-
-
 fileName = sys.argv[1]
 puzzleData = list()
 with open(str(fileName)) as file:
     puzzleData = file.readlines()
-
+ 
 for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
-    print(p.getNeighbours(2, 2))
+
+    print("parent node is: ", p.root)
+    p.root.generateChildren(p.size * p.size)
+    for i in range(len(p.root.children)):
+        print("child ", p.root.children[i], " of parent ", p.root.children[i].parent)
+
+    print("state of child 0: ")
+    print(p.root.children[0].state)
+    print("parent's state is: ")
+    print(p.root.children[0].parent.state)
