@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+from collections import OrderedDict 
 
 # unused at the moment
 class State:
@@ -36,6 +37,7 @@ class Puzzle_Util:
         label_str = "".join([Row_Label(row).name, str(col+1)])
         return(label_str)
 
+    @staticmethod
     def printArray(arr):
         flat = np.ravel(arr)
         for i in flat:
@@ -135,6 +137,11 @@ class Puzzle:
         self.currentState = M
         self.root = Node(None, None, self.initialState, 1, 0)
 
+        # initialize closed list and open list
+        closedList = OrderedDict()
+        openList = OrderedDict()
+
+    
         # construct mask matrix
         self.mask = np.empty([self.size+2, self.size+2], dtype=int)
         for row in range(len(self.mask)):
@@ -171,6 +178,23 @@ class Puzzle:
             print("One or more specified indices are out of bounds for Puzzle.getNeighbours(row, column)")
             return None
         return self.currentState.take(indices)
+    
+    def isGoal(givenArray,size):
+        goal = np.zeros((size, size)
+        flatGoal = np.ravel(goal)
+        if (givenArray==flatGoal).all():
+            return True
+        else
+            return False
+
+    
+    def puzzleDFS(self, Node):
+
+        
+
+
+
+
 
 fileName = sys.argv[1]
 puzzleData = list()
