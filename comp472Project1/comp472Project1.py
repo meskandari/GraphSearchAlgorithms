@@ -138,8 +138,8 @@ class Puzzle:
         self.root = Node(None, None, self.initialState, 1, 0)
 
         # initialize closed list and open list
-        closedList = OrderedDict()
-        openList = OrderedDict()
+        self.closedList = OrderedDict()
+        self.openList = OrderedDict()
 
     
         # construct mask matrix
@@ -179,6 +179,8 @@ class Puzzle:
             return None
         return self.currentState.take(indices)
     
+    
+    
     def isGoal(givenArray,size):
         goal = np.zeros((size, size)
         flatGoal = np.ravel(goal)
@@ -188,9 +190,40 @@ class Puzzle:
             return False
 
     
-    def puzzleDFS(self, Node):
+    def puzzleDFS(state,Node):
+        
+        if(Node.depth>=self.maxDepth):
+            #pop next element in stack
+            puzzleDFS(self.openList.popitem(last=True))
 
         
+        else if(isGoal(Node.state),self.size):
+            #print DFS solution.txt // to be written
+
+        else:
+
+            #add Node.state to the CLOSED LIST
+            self.closedList[Node.state] = Node
+
+            #THEN generate the Node's children
+           Node.generateChildren(self.size)
+            #IF NODE children do not have have higher depth than maxdepth, add them to OPEN LIST
+            for item in Node.children:
+                if (item.depth<self.maxDepth) and (item.state not in self.closedList):
+                    closedList[item.state]=item
+
+            #IF stack if EMPTY , print "No Solution"
+            if not bool(self.openList):
+                print('No Solution')
+            
+            #POP next element on the Stack and visit
+            puzzleDFS(self.openList.popitem(last=True))
+
+
+
+
+
+
 
 
 
