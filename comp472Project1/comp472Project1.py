@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-from operator import itemgetter, attrgetter
 from collections import OrderedDict
 from enum import Enum
 
@@ -28,46 +27,31 @@ class State:
 
 class Node_BinaryRep:
 
-    def __init__(self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost):
+    def __init__(self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost, label = "A1"):
         self.parent = parent_Node
         self.index = index
         self.stateStr = stateStr
         self.depth = depth
         self.cost = cost
-        self.offset = size
-        self.state_as_BinaryArr = np.empty(self.offset*self.offset, dtype=int)
         self.children = list()
-            
-        if(depth == 0):
-            for i in range(len(self.state_as_BinaryArr)):
-                self.state_as_BinaryArr[i] = int(self.stateStr[i])
-            
-        #print("maryam ****")
-        #example = list()
-        #temp1='101001001'
-        #temp2='101001111'
-        #temp3='111011001'
-        #temp4='101101011'
-        #temp5='111011111'
-        #temp6=str(bin(2**100))
-
-        #example.append(temp1)
-        #example.append(temp2)
-        #example.append(temp3)
-        #example.append(temp4)
-        #example.append(temp5)
-        #example.append(temp6)
-
-        #print(sorted(example , key = Node_BinaryRep.stringToDecimal ,reverse = True))
-        #print(example)
-        #print("maryam ****")
+        self.state_as_BinaryArr = state_as_BinaryArr
+        self.label = label
     
-    @staticmethod
-    def stringToDecimal(stateStr):
-        str1 = str(stateStr)
-        b = int(str1 ,2)
-        return b
+        if(state_as_BinaryArr == None):
+            self.state_as_BinaryArr = np.empty(len(self.stateStr), dtype = 'int')
+            for i in range(len(stateStr)):
+                self.state_as_BinaryArr[i] = int(self.stateStr[i])
+        #n= self.getNeighbours(3)
+        #b = self.touchAndMoveBitwiseApproach(3)
         
+        #print("maryam ****")
+       
+        #print(self.state_as_BinaryArr)
+        #self.generateChildren()
+        #print(test2)
+        #print("maryam ****")
+
+                
     def generateChildren(self):
        for i in range(len(self.state_as_BinaryArr)):
             arr = self.touchAndMoveBitwiseApproach(i)
@@ -78,14 +62,11 @@ class Node_BinaryRep:
 
     def generateChildrenAlreadyOrdered(self):
         for i in range(len(self.state_as_BinaryArr)):
+            j = i // 
             arr = self.touchAndMoveBitwiseApproach(i)
-            str1 = str(arr)
-            print (str1)
-            n = Node_BinaryRep(self, i,self.offset, str1 ,arr, self.depth + 1, self.cost + 1)
-            self.children.append(n)
-        self.children = sorted(self.children , key = attrgetter('stateStr') ,reverse = True)
-                
-
+            str = arr.tostring()
+            n = Node_BinaryRep(self, i,self.size, str,arr, self.depth + 1, self.cost + 1, Puzzle_Util.generateNodeLabel(i,j))
+            childrenList.append(n)
 
 
     def goalStateTest(self ,size):
@@ -168,6 +149,7 @@ class Puzzle:
         self.maxDepth = int(data[1])
         self.maxLength = int(data[2])
         self.stateString = data[3]
+        test = Node_BinaryRep(None,0,self.size,self.stateString,None,0,0)
         index = 0
         self.root = Node_BinaryRep(None,0,self.size,self.stateString,None,0,0)
 
