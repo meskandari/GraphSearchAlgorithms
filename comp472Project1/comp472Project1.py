@@ -45,26 +45,7 @@ class Node_BinaryRep:
         if(depth == 0):
             for i in range(len(self.state_as_BinaryArr)):
                 self.state_as_BinaryArr[i] = int(self.stateStr[i])
-            
-        #print("maryam ****")
-        #example = list()
-        #temp1='101001001'
-        #temp2='101001111'
-        #temp3='111011001'
-        #temp4='101101011'
-        #temp5='111011111'
-        #temp6=str(bin(2**100))
 
-        #example.append(temp1)
-        #example.append(temp2)
-        #example.append(temp3)
-        #example.append(temp4)
-        #example.append(temp5)
-        #example.append(temp6)
-
-        #print(sorted(example , key = Node_BinaryRep.stringToDecimal ,reverse = True))
-        #print(example)
-        #print("maryam ****")
     
     @staticmethod
     def stringToDecimal(stateStr):
@@ -81,6 +62,7 @@ class Node_BinaryRep:
         
 
     def generateChildrenAlreadyOrdered(self):
+        
         for i in range(len(self.state_as_BinaryArr)):
             row = i // self.offset
             col = i % self.offset
@@ -88,6 +70,7 @@ class Node_BinaryRep:
             str1 = str(arr)
             print (str1)
             n = Node_BinaryRep(self, i,self.offset, str1 ,arr, self.depth + 1, self.cost + 1,Puzzle_Util.generateNodeLabel(row,col))
+            print('I am at depth: ' + str(n.depth))
             self.children.append(n)
         self.children = sorted(self.children , key = attrgetter('stateStr') ,reverse = True)
 
@@ -194,6 +177,7 @@ class Puzzle:
         
         if(node.depth>=self.maxDepth):
             #pop next element in stack
+            print('I am backtracking')
             self.puzzleDFS(self.openList.popitem(last=True))
                 
             #IF stack if EMPTY , print "No Solution"
@@ -216,7 +200,8 @@ class Puzzle:
             #IF NODE children do not have have higher depth than maxdepth, add them to OPEN LIST
             for item in node.children:
                 if (item.depth<self.maxDepth) and (item.stateStr not in self.closedList):
-                    self.closedList[item.stateStr]=item
+                    print('I am adding an item to openList')
+                    self.openList[item.stateStr]=item
 
             #IF stack if EMPTY , print "No Solution"
             if not bool(self.openList):
@@ -224,7 +209,7 @@ class Puzzle:
                 self.printSearchPath(SearchType.DFS)
             else:
                 #POP next element on the Stack and visit
-                self.puzzleDFS(self.openList.popitem(last=True))
+                self.puzzleDFS(self.openList.popitem(last=True)[1])
 
     def printSolutionPath(self, type):
         if type == SearchType.DFS:
@@ -259,18 +244,18 @@ class Puzzle:
         file = open(outputFileName, 'w')
 
         for key, value in self.closedList.items():
-            outputString = str(value.fn) + " " + str(value.gn) + " " + str(value.hn) + " " + key + "\n"
+            outputString = str(value.fn) + " " + str(value.gn) + " " + str(value.hn) + " " + str(key) + "\n"
             file.write(outputString)
 
         file.close()
 
     def createSolutionPath(self, node):
         n = node
-        if n.parent:
+        if n.parent is not None:
             while(true):
                 self.solutionPathStates.append(node)
                 n = n.parent
-                if not n.parent:
+                if n.parent is None:
                     self.solutionPathStates.append(node)
                     break
                 
