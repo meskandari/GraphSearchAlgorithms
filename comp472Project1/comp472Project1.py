@@ -1,6 +1,12 @@
 import sys
 import numpy as np
-from collections import OrderedDict 
+from collections import OrderedDict
+from enum import Enum
+
+class SearchType(Enum):
+    DFS = 1
+    BFS = 2
+    ASTAR = 3
 
 # unused at the moment
 class State:
@@ -108,6 +114,9 @@ class Node:
         self.depth = depth
         self.cost = cost
         self.children = list()
+        self.fn = 0
+        self.gn = 0
+        self.hn = 0
 
 
     #def generateChildren(self, max):
@@ -141,7 +150,11 @@ class Puzzle_Util:
 
 
 class Puzzle:
+    #static data member that keeps track of puzzle number
+    puzzleNumber = -1    
+
     def __init__(self, data):
+        self.puzzleNumber += 1
         self.size = int(data[0])
         self.maxDepth = int(data[1])
         self.maxLength = int(data[2])
@@ -154,7 +167,9 @@ class Puzzle:
         self.closedList = OrderedDict()
         self.openList = OrderedDict()
 
-    
+        # create empty solution path arrays, they will be filled backwards once the solution path is found
+        self.solutionPathLabels = list()
+        self.solutionPathStates = list()
     
     
     def isGoal(self,givenArray,size):
@@ -199,16 +214,45 @@ class Puzzle:
             #POP next element on the Stack and visit
             puzzleDFS(self.openList.popitem(last=True))
 
+    def printSolutionPath(type):
+        if type == SearchType.DFS:
+            outputFileName = str(0) + "_dfs_solution.txt"
+        elif type == SearchType.BFS:
+            outputFileName = str(0) + "_bfs_solution.txt"
+        elif type == SearchType.BFS:
+            outputFileName = str(0) + "_astar_solution.txt"
 
+        file = open(outputFileName, 'w')
 
+        if self.solutionPathStates.size > 0:
+            for i in range(self.solutionPathStates.size - 1, -1, -1):
+                outputString = self.solutionPathLabels[i] + "\t"
+                for j in range(self.solutionPathStates[i].size):
+                    outputString += self.solutionPathStates[i][j] + " "
+                outputString += "\n"
+                file.write(outputString)
+        else:
+            file.write("No solution")
 
+        file.close()
 
+    def printSearchPath(type):
+        if type == SearchType.DFS:
+            outputFileName = str(0) + "_dfs_search.txt"
+        elif type == SearchType.BFS:
+            outputFileName = str(0) + "_bfs_search.txt"
+        elif type == SearchType.BFS:
+            outputFileName = str(0) + "_astar_search.txt"
 
+        file = open(outputFileName, 'w')
 
+        for key, value in self.closedList.items():
+            outputString = str(value.fn) + " " + str(value.gn) + " " + str(value.hn) + " " + key + "\n"
+            file.write(outputString)
 
+        file.close()
 
-
-
+#MAIN
 fileName = sys.argv[1]
 puzzleData = list()
 with open(str(fileName)) as file:
@@ -217,13 +261,3 @@ with open(str(fileName)) as file:
 for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
-
-    #print("parent node is: ", p.root)
-    #p.root.generateChildren(p.size * p.size)
-    #for i in range(len(p.root.children)):
-    #    print("child ", p.root.children[i], " of parent ", p.root.children[i].parent)
-
-    #print("state of child 0: ")
-    #print(p.root.children[0].state)
-    #print("parent's state is: ")
-    #print(p.root.children[0].parent.state)
