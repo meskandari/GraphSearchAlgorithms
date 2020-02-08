@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+from collections import OrderedDict 
 
 # unused at the moment
 class State:
@@ -128,86 +129,14 @@ class Puzzle_Util:
         label_str = "".join([Row_Label(row).name, str(col+1)])
         return(label_str)
 
+    @staticmethod
     def printArray(arr):
         flat = np.ravel(arr)
         for i in flat:
             print(i,end =" ")
         print()
 
-    @staticmethod
-    def flip(value):
-        return 1 if value == 0 else 0
 
-    @staticmethod
-    def moveTouch(state, size, givenRow, givenColumn):
-        try:
-            upper_bound=size-1
-            #print("Upper bound index is " + str(upper_bound)) -- DEGUG LINE
-            row=int(givenRow)
-            col=int(givenColumn)
-
-            #FlIP LOCATION
-            state[row][col]=Puzzle_Util.flip(state[row][col])
-
-            #FLIP LEFT - col axis
-            if((col-1)<0):
-                '''do nothing'''
-            else:
-                state[row][col-1]=Puzzle_Util.flip(state[row][col-1])
-
-
-            #FLIP RIGHT - col axis
-            if((col+1)>upper_bound):
-                '''do nothing'''
-            else:
-                state[row][col+1]=Puzzle_Util.flip(state[row][col+1])
-
-            #FLIP UP - row axis
-            if((row-1)<0):
-                '''do nothing'''
-            else:
-                state[row-1][col]=Puzzle_Util.flip(state[row-1][col])
-
-            #FLIP DOWN - row axis
-            if((row+1)>upper_bound):
-                '''do nothing'''
-            else:
-                state[row+1][col]=Puzzle_Util.flip(state[row+1][col])
-
-            return state
-        except IndexError:
-            print("One or more specified indices are out of bounds for Node.moveTouch(self, givenRow, givenColumn)")
-
-    def evaluateState(arr,position):
-        #extract row and col index
-        location = position.split(",")
-        row=int(location[0])
-        col=int(location[1])
-        #initialize search result coordinates
-        i,j=0,0
-        #run search for value
-        searchRows,searchCols=np.where(arr == 0)
-        #iterate through result to spit out first result
-        for index,value in enumerate(searchRows):
-            if(searchRows[index]>row):
-                #print(searchRows[index])
-                i=searchRows[index]
-                j=searchCols[index]
-                #print("X: " + str(searchRows[index]) + " Y: " + str(searchCols[index]))
-                break
-            if(searchRows[index]==row):
-                #print(searchRows[index])            
-                if(searchCols[index]>col):
-                    i=searchRows[index]
-                    j=searchCols[index]
-                    #print("X: " + str(searchRows[index]) + " Y: " + str(searchCols[index]))
-                    break
-                else:
-                    continue
-        output=list()
-        output.append(i)
-        output.append(j)
-        return output
 
 class Puzzle:
     def __init__(self, data):
@@ -217,52 +146,66 @@ class Puzzle:
         self.stateString = data[3]
         test = Node_BinaryRep('a',3,data[3])
         index = 0
-        M = np.empty([self.size, self.size], dtype=int)
-        for i in range(len(M)):
-            for j in range(len(M[i])):
-                M[i,j] = int(self.stateString[index])
-                index += 1
+        self.root = Node(None, None, self.stateString, 1, 0)
+
+        # initialize closed list and open list
+        self.closedList = OrderedDict()
+        self.openList = OrderedDict()
+
+    
+    
+    
+    def isGoal(self,givenArray,size):
+        goal = np.zeros(size*size)
+        if  np.array_equal(goal,givenArray):
+            return True
+        else:
+            return False
+
+    
+    def puzzleDFS(self,Node):
         
-        self.initialState = M
-        self.currentState = M
-        self.root = Node(None, None, self.initialState, 1, 0)
+        if(Node.depth>=self.maxDepth):
+            #pop next element in stack
+            puzzleDFS(self.openList.popitem(last=True))
+                
+            #IF stack if EMPTY , print "No Solution"
+            if not bool(self.openList):
+                print('No Solution')
+                #CREATE _DFS_SEARCH.TXT // JASON CODE
+        
+        elif (self.isGoal(Node.statestr,self.size)):
+            print("JASON CODE TBD")
+            #print DFS solution.txt // JASON CODE
 
-        # construct mask matrix
-        self.mask = np.empty([self.size+2, self.size+2], dtype=int)
-        for row in range(len(self.mask)):
-            for column in range(len(self.mask[row])):
-                # if top row or bottom row, pad with 0s
-                if row == 0 or row == (len(self.mask) - 1):
-                    self.mask[row, column] = 0
-                # if left column or right column, pad with 0s
-                elif column == 0 or column == (len(self.mask) - 1):
-                    self.mask[row, column] = 0
-                # otherwise place 1s in inner square
-                else:
-                    self.mask[row, column] = 1
+        else:
 
-    # grab the immediate neighbours of the specified indices
-    # verifies the neighbours against the mask so it doesn't try to grab out of bounds
-    def getNeighbours(self, row, column):
-        try:
-            index = (row * self.size) + column
-            indices = list()
-            # top
-            if (self.mask[row, column+1] == 1):
-                indices.append(index - self.size)
-            # bottom
-            if (self.mask[row+2, column+1] == 1):
-                indices.append(index + self.size)
-            # left
-            if (self.mask[row+1, column] == 1):
-                indices.append(index - 1)
-            # right
-            if (self.mask[row+1, column+2] == 1):
-                indices.append(index + 1)
-        except IndexError:
-            print("One or more specified indices are out of bounds for Puzzle.getNeighbours(row, column)")
-            return None
-        return self.currentState.take(indices)
+            #add Node.state to the CLOSED LIST // DEPENDS ON TEAM DECISION
+            self.closedList[Node.statestr] = Node
+
+            #THEN generate the Node's children
+            Node.generateChildren(self.size)
+            #IF NODE children do not have have higher depth than maxdepth, add them to OPEN LIST
+            for item in Node.children:
+                if (item.depth<self.maxDepth) and (item.statestr not in self.closedList):
+                    closedList[item.statestr]=item
+
+            #IF stack if EMPTY , print "No Solution"
+            if not bool(self.openList):
+                print('No Solution')
+            
+            #POP next element on the Stack and visit
+            puzzleDFS(self.openList.popitem(last=True))
+
+
+
+
+
+
+
+
+
+
 
 fileName = sys.argv[1]
 puzzleData = list()
