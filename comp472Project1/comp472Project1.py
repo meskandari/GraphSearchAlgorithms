@@ -25,7 +25,11 @@ class Node_BinaryRep:
         self.offset = size
         self.state_as_BinaryArr = np.empty(self.offset*self.offset, dtype=int)
         self.children = list()
-            
+        self.state_as_BinaryArr = state_as_BinaryArr
+        self.fn = 0
+        self.gn = 0
+        self.hn = 0
+           
         if(depth == 0):
             for i in range(len(self.state_as_BinaryArr)):
                 self.state_as_BinaryArr[i] = int(self.stateStr[i])
@@ -125,30 +129,6 @@ class Node_BinaryRep:
                  neighbours[3]=self.state_as_BinaryArr[digit+1]
         return neighbours
             
-
-
-class Node:
-    def __init__(self, parent, index, state, depth, cost):
-        self.parent = parent
-        self.index = index
-        self.state = state
-        self.depth = depth
-        self.cost = cost
-        self.children = list()
-        self.fn = 0
-        self.gn = 0
-        self.hn = 0
-
-    def generateChildren(self, max):
-        for i in range(max):
-            if(i != self.index):
-                s = np.array(self.state)
-                coords = np.unravel_index(i, s.shape)
-                s = Puzzle_Util.moveTouch(s, s.shape[0], coords[0], coords[1])
-                # cost + 1 for now
-                n = Node(self, i, s, self.depth + 1, self.cost + 1)
-                self.children.append(n)
-
 class Puzzle_Util:
 
     def __init__(self):
@@ -167,11 +147,9 @@ class Puzzle_Util:
             print(i,end =" ")
         print()
 
-
-
 class Puzzle:
     #static data member that keeps track of puzzle number
-    puzzleNumber = -1    
+    puzzleNumber = -1
 
     def __init__(self, data):
         self.puzzleNumber += 1
@@ -181,7 +159,7 @@ class Puzzle:
         self.stateString = data[3]
 
         index = 0
-        self.root = Node(None, None, self.stateString, 1, 0)
+        self.root = Node_BinaryRep(None, None, self.stateString, 1, 0)
 
         # initialize closed list and open list
         self.closedList = OrderedDict()
@@ -200,30 +178,29 @@ class Puzzle:
             return False
 
     
-    def puzzleDFS(self,Node):
+    def puzzleDFS(self, node):
         
-        if(Node.depth>=self.maxDepth):
+        if(node.depth>=self.maxDepth):
             #pop next element in stack
             puzzleDFS(self.openList.popitem(last=True))
                 
             #IF stack if EMPTY , print "No Solution"
             if not bool(self.openList):
-                print('No Solution')
-                #CREATE _DFS_SEARCH.TXT // JASON CODE
+                printSolutionPath(SearchType.DFS)
         
-        elif (self.isGoal(Node.statestr,self.size)):
-            print("JASON CODE TBD")
-            #print DFS solution.txt // JASON CODE
+        elif (self.isGoal(node.stateStr,self.size)):
+            createSolutionPath(node)
+            printSolutionPath(SearchType.DFS)
 
         else:
 
             #add Node.state to the CLOSED LIST // DEPENDS ON TEAM DECISION
-            self.closedList[Node.statestr] = Node
+            self.closedList[node.stateStr] = node
 
             #THEN generate the Node's children
-            Node.generateChildren(self.size)
+            node.generateChildren(self.size)
             #IF NODE children do not have have higher depth than maxdepth, add them to OPEN LIST
-            for item in Node.children:
+            for item in node.children:
                 if (item.depth<self.maxDepth) and (item.statestr not in self.closedList):
                     closedList[item.statestr]=item
 
@@ -234,21 +211,21 @@ class Puzzle:
             #POP next element on the Stack and visit
             puzzleDFS(self.openList.popitem(last=True))
 
-    def printSolutionPath(type):
+    def printSolutionPath(self, type):
         if type == SearchType.DFS:
-            outputFileName = str(0) + "_dfs_solution.txt"
+            outputFileName = str(self.puzzleNumber) + "_dfs_solution.txt"
         elif type == SearchType.BFS:
-            outputFileName = str(0) + "_bfs_solution.txt"
+            outputFileName = str(self.puzzleNumber) + "_bfs_solution.txt"
         elif type == SearchType.BFS:
-            outputFileName = str(0) + "_astar_solution.txt"
+            outputFileName = str(self.puzzleNumber) + "_astar_solution.txt"
 
         file = open(outputFileName, 'w')
 
         if self.solutionPathStates.size > 0:
-            for i in range(self.solutionPathStates.size - 1, -1, -1):
-                outputString = self.solutionPathLabels[i] + "\t"
-                for j in range(self.solutionPathStates[i].size):
-                    outputString += self.solutionPathStates[i][j] + " "
+            for i in range(len(self.solutionPathStates) - 1, -1, -1):
+                outputString = self.solutionPathStates[i].label + "\t"
+                for j in range(len(self.solutionPathStates[i].stateStr)):
+                    outputString += self.solutionPathStates[i].stateStr[j] + " "
                 outputString += "\n"
                 file.write(outputString)
         else:
@@ -256,7 +233,7 @@ class Puzzle:
 
         file.close()
 
-    def printSearchPath(type):
+    def printSearchPath(self, type):
         if type == SearchType.DFS:
             outputFileName = str(0) + "_dfs_search.txt"
         elif type == SearchType.BFS:
@@ -271,6 +248,18 @@ class Puzzle:
             file.write(outputString)
 
         file.close()
+
+    def createSolutionPath(self, node):
+        n = node
+        if n.parent:
+            while(true):
+                self.solutionPathStates.append(node)
+                n = n.parent
+                if not n.parent:
+                    self.solutionPathStates.append(node)
+                    break
+                
+        
 
 #MAIN
 fileName = sys.argv[1]
