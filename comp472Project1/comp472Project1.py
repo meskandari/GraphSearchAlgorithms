@@ -13,6 +13,98 @@ class State:
     def __init__(self, state):
         self.state = state
 
+class Node_BinaryRep:
+
+    def __init__(self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost):
+        self.parent = parent
+        self.index = index
+        self.stateStr = stateStr
+        self.depth = depth
+        self.cost = cost
+        self.children = list()
+        self.state_as_BinaryArr = state_as_BinaryArr
+    
+        if(state_as_BinaryArr == null):
+            for i in range(len(self.state_as_BinaryArr)):
+                self.state_as_BinaryArr[i] = int(stateSrt[i])
+        #n= self.getNeighbours(3)
+        #b = self.touchAndMoveBitwiseApproach(3)
+        
+        #print("maryam ****")
+       
+        #print(self.state_as_BinaryArr)
+        #self.generateChildren()
+        #print(test2)
+        #print("maryam ****")
+
+                
+    def generateChildren(self):
+       for i in range(len(self.state_as_BinaryArr)):
+            arr = self.touchAndMoveBitwiseApproach(i)
+            str = arr.tostring()
+            childrenList.append(str)
+       return childrenList
+        
+
+    def generateChildrenAlreadyOrdered(self):
+        for i in range(len(self.state_as_BinaryArr)):
+            arr = self.touchAndMoveBitwiseApproach(i)
+            str = arr.tostring()
+            n = Node_BinaryRep(self, i,self.size, str,arr, self.depth + 1, self.cost + 1)
+            childrenList.append(n)
+
+
+    def goalStateTest(self ,size):
+        zeros_arr = np.zeros(len(self.state_as_BinaryArr), dtype = 'int')
+        return (np.array_equal(zeros_arr , self.state_as_BinaryArr))
+    
+    
+    def touchAndMoveBitwiseApproach(self , digit):
+        zeros_arr = np.zeros(len(self.state_as_BinaryArr), dtype = 'int')
+        indexNeedToChange =self.getValidIndexNeedToChange(digit)
+        
+        for i in indexNeedToChange:
+            zeros_arr[i] = 1
+       
+        result = np.bitwise_xor(zeros_arr , self.state_as_BinaryArr)
+        return (result)
+        
+
+    def getValidIndexNeedToChange(self , digit):
+        validIndexes = list() #order is top, bot , left , right
+        if (digit >-1 and digit < len(self.state_as_BinaryArr) ):
+            validIndexes.append(digit)
+            if(digit-self.offset >=0):#top neighbours
+                validIndexes.append(digit-self.offset)
+        
+            if( (digit%self.offset) != 0 ):#left neighbours
+                validIndexes.append(digit-1)
+        
+            if(digit+self.offset <len(self.state_as_BinaryArr)):#bot neighbour
+                validIndexes.append(digit+self.offset)
+
+            if((digit+1)%self.offset != 0):#right neighbours
+                 validIndexes.append(digit+1)
+        return validIndexes
+
+    def getNeighbours(self , digit):
+        neighbours = [-1,-1,-1,-1] #order is top, bot , left , right
+        if (digit >-1 and digit < len(self.state_as_BinaryArr) ):
+            if(digit-self.offset >=0):#top neighbours
+                neighbours[0]=self.state_as_BinaryArr[digit-self.offset]
+        
+            if( (digit%self.offset) != 0 ):#left neighbours
+                neighbours[2]=self.state_as_BinaryArr[digit-1]
+        
+            if(digit+self.offset <len(self.state_as_BinaryArr)):#bot neighbour
+                neighbours[1]=self.state_as_BinaryArr[digit+self.offset]
+
+            if((digit+1)%self.offset != 0):#right neighbours
+                 neighbours[3]=self.state_as_BinaryArr[digit+1]
+        return neighbours
+            
+
+
 class Node:
     def __init__(self, parent, index, state, depth, cost):
         self.parent = parent
@@ -46,86 +138,14 @@ class Puzzle_Util:
         label_str = "".join([Row_Label(row).name, str(col+1)])
         return(label_str)
 
+    @staticmethod
     def printArray(arr):
         flat = np.ravel(arr)
         for i in flat:
             print(i,end =" ")
         print()
 
-    @staticmethod
-    def flip(value):
-        return 1 if value == 0 else 0
 
-    @staticmethod
-    def moveTouch(state, size, givenRow, givenColumn):
-        try:
-            upper_bound=size-1
-            #print("Upper bound index is " + str(upper_bound)) -- DEGUG LINE
-            row=int(givenRow)
-            col=int(givenColumn)
-
-            #FlIP LOCATION
-            state[row][col]=Puzzle_Util.flip(state[row][col])
-
-            #FLIP LEFT - col axis
-            if((col-1)<0):
-                '''do nothing'''
-            else:
-                state[row][col-1]=Puzzle_Util.flip(state[row][col-1])
-
-
-            #FLIP RIGHT - col axis
-            if((col+1)>upper_bound):
-                '''do nothing'''
-            else:
-                state[row][col+1]=Puzzle_Util.flip(state[row][col+1])
-
-            #FLIP UP - row axis
-            if((row-1)<0):
-                '''do nothing'''
-            else:
-                state[row-1][col]=Puzzle_Util.flip(state[row-1][col])
-
-            #FLIP DOWN - row axis
-            if((row+1)>upper_bound):
-                '''do nothing'''
-            else:
-                state[row+1][col]=Puzzle_Util.flip(state[row+1][col])
-
-            return state
-        except IndexError:
-            print("One or more specified indices are out of bounds for Node.moveTouch(self, givenRow, givenColumn)")
-
-    def evaluateState(arr,position):
-        #extract row and col index
-        location = position.split(",")
-        row=int(location[0])
-        col=int(location[1])
-        #initialize search result coordinates
-        i,j=0,0
-        #run search for value
-        searchRows,searchCols=np.where(arr == 0)
-        #iterate through result to spit out first result
-        for index,value in enumerate(searchRows):
-            if(searchRows[index]>row):
-                #print(searchRows[index])
-                i=searchRows[index]
-                j=searchCols[index]
-                #print("X: " + str(searchRows[index]) + " Y: " + str(searchCols[index]))
-                break
-            if(searchRows[index]==row):
-                #print(searchRows[index])            
-                if(searchCols[index]>col):
-                    i=searchRows[index]
-                    j=searchCols[index]
-                    #print("X: " + str(searchRows[index]) + " Y: " + str(searchCols[index]))
-                    break
-                else:
-                    continue
-        output=list()
-        output.append(i)
-        output.append(j)
-        return output
 
 class Puzzle:
     #static data member that keeps track of puzzle number
@@ -137,14 +157,61 @@ class Puzzle:
         self.maxDepth = int(data[1])
         self.maxLength = int(data[2])
         self.stateString = data[3]
+
+        test = Node_BinaryRep('a',3,data[3])
         index = 0
         self.root = Node(None, None, self.stateString, 1, 0)
+
+        # initialize closed list and open list
+        self.closedList = OrderedDict()
+        self.openList = OrderedDict()
 
         # create empty solution path arrays, they will be filled backwards once the solution path is found
         self.solutionPathLabels = list()
         self.solutionPathStates = list()
+    
+    
+    def isGoal(self,givenArray,size):
+        goal = np.zeros(size*size)
+        if  np.array_equal(goal,givenArray):
+            return True
+        else:
+            return False
 
+    
+    def puzzleDFS(self,Node):
         
+        if(Node.depth>=self.maxDepth):
+            #pop next element in stack
+            puzzleDFS(self.openList.popitem(last=True))
+                
+            #IF stack if EMPTY , print "No Solution"
+            if not bool(self.openList):
+                print('No Solution')
+                #CREATE _DFS_SEARCH.TXT // JASON CODE
+        
+        elif (self.isGoal(Node.statestr,self.size)):
+            print("JASON CODE TBD")
+            #print DFS solution.txt // JASON CODE
+
+        else:
+
+            #add Node.state to the CLOSED LIST // DEPENDS ON TEAM DECISION
+            self.closedList[Node.statestr] = Node
+
+            #THEN generate the Node's children
+            Node.generateChildren(self.size)
+            #IF NODE children do not have have higher depth than maxdepth, add them to OPEN LIST
+            for item in Node.children:
+                if (item.depth<self.maxDepth) and (item.statestr not in self.closedList):
+                    closedList[item.statestr]=item
+
+            #IF stack if EMPTY , print "No Solution"
+            if not bool(self.openList):
+                print('No Solution')
+            
+            #POP next element on the Stack and visit
+            puzzleDFS(self.openList.popitem(last=True))
 
     def printSolutionPath(type):
         if type == SearchType.DFS:
