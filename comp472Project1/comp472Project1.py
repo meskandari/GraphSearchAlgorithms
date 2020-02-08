@@ -165,7 +165,7 @@ class Puzzle:
     puzzleNumber = -1
 
     def __init__(self, data):
-        self.puzzleNumber += 1
+        Puzzle.puzzleNumber += 1
         self.size = int(data[0])
         self.maxDepth = int(data[1])
         self.maxLength = int(data[2])
@@ -281,9 +281,8 @@ fileName = sys.argv[1]
 puzzleData = list()
 with open(str(fileName)) as file:
     puzzleData = file.readlines()
- 
+
 for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
-
     p.puzzleDFS(p.root)
