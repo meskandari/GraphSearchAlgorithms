@@ -163,7 +163,7 @@ class Puzzle:
             return False
 
     
-    def puzzleDFS(self,Node):
+    def puzzleDFS(self,stateStr,Node):
         
         if(Node.depth>=self.maxDepth):
             #pop next element in stack
@@ -174,21 +174,21 @@ class Puzzle:
                 print('No Solution')
                 #CREATE _DFS_SEARCH.TXT // JASON CODE
         
-        elif (self.isGoal(Node.statestr,self.size)):
+        elif (self.isGoal(Node.stateStr,self.size)):
             print("JASON CODE TBD")
             #print DFS solution.txt // JASON CODE
 
         else:
 
             #add Node.state to the CLOSED LIST // DEPENDS ON TEAM DECISION
-            self.closedList[Node.statestr] = Node
+            self.closedList[Node.stateStr] = Node
 
             #THEN generate the Node's children
-            Node.generateChildren(self.size)
+            Node.generateChildrenAlreadyOrdered(self.size)
             #IF NODE children do not have have higher depth than maxdepth, add them to OPEN LIST
             for item in Node.children:
-                if (item.depth<self.maxDepth) and (item.statestr not in self.closedList):
-                    closedList[item.statestr]=item
+                if (item.depth<self.maxDepth) and (item.stateStr not in self.closedList):
+                    closedList[item.stateStr]=item
 
             #IF stack if EMPTY , print "No Solution"
             if not bool(self.openList):
