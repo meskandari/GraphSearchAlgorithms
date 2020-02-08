@@ -10,7 +10,7 @@ class State:
 class Node_BinaryRep:
 
     def __init__(self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost):
-        self.parent = parent
+        self.parent = parent_Node
         self.index = index
         self.stateStr = stateStr
         self.depth = depth
@@ -18,9 +18,10 @@ class Node_BinaryRep:
         self.children = list()
         self.state_as_BinaryArr = state_as_BinaryArr
     
-        if(state_as_BinaryArr == null):
-            for i in range(len(self.state_as_BinaryArr)):
-                self.state_as_BinaryArr[i] = int(stateSrt[i])
+        if(state_as_BinaryArr == None):
+            self.state_as_BinaryArr = np.empty(len(self.stateStr), dtype = 'int')
+            for i in range(len(stateStr)):
+                self.state_as_BinaryArr[i] = int(self.stateStr[i])
         #n= self.getNeighbours(3)
         #b = self.touchAndMoveBitwiseApproach(3)
         
@@ -108,15 +109,16 @@ class Node:
         self.cost = cost
         self.children = list()
 
-    def generateChildren(self, max):
-        for i in range(max):
-            if(i != self.index):
-                s = np.array(self.state)
-                coords = np.unravel_index(i, s.shape)
-                s = Puzzle_Util.moveTouch(s, s.shape[0], coords[0], coords[1])
-                # cost + 1 for now
-                n = Node(self, i, s, self.depth + 1, self.cost + 1)
-                self.children.append(n)
+
+    #def generateChildren(self, max):
+    #    for i in range(max):
+    #        if(i != self.index):
+    #            s = np.array(self.state)
+    #            coords = np.unravel_index(i, s.shape)
+    #            s = Puzzle_Util.moveTouch(s, s.shape[0], coords[0], coords[1])
+    #            # cost + 1 for now
+    #            n = Node(self, i, s, self.depth + 1, self.cost + 1)
+    #            self.children.append(n)
 
 class Puzzle_Util:
 
@@ -144,7 +146,7 @@ class Puzzle:
         self.maxDepth = int(data[1])
         self.maxLength = int(data[2])
         self.stateString = data[3]
-        test = Node_BinaryRep('a',3,data[3])
+        test = Node_BinaryRep(None,0,self.size,self.stateString,None,0,0)
         index = 0
         self.root = Node(None, None, self.stateString, 1, 0)
 
@@ -216,12 +218,12 @@ for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
 
-    print("parent node is: ", p.root)
-    p.root.generateChildren(p.size * p.size)
-    for i in range(len(p.root.children)):
-        print("child ", p.root.children[i], " of parent ", p.root.children[i].parent)
+    #print("parent node is: ", p.root)
+    #p.root.generateChildren(p.size * p.size)
+    #for i in range(len(p.root.children)):
+    #    print("child ", p.root.children[i], " of parent ", p.root.children[i].parent)
 
-    print("state of child 0: ")
-    print(p.root.children[0].state)
-    print("parent's state is: ")
-    print(p.root.children[0].parent.state)
+    #print("state of child 0: ")
+    #print(p.root.children[0].state)
+    #print("parent's state is: ")
+    #print(p.root.children[0].parent.state)
