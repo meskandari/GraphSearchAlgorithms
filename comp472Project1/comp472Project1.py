@@ -6,6 +6,98 @@ class State:
     def __init__(self, state):
         self.state = state
 
+class Node_BinaryRep:
+
+    def __init__(self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost):
+        self.parent = parent
+        self.index = index
+        self.stateStr = stateStr
+        self.depth = depth
+        self.cost = cost
+        self.children = list()
+        self.state_as_BinaryArr = state_as_BinaryArr
+    
+        if(state_as_BinaryArr == null):
+            for i in range(len(self.state_as_BinaryArr)):
+                self.state_as_BinaryArr[i] = int(stateSrt[i])
+        #n= self.getNeighbours(3)
+        #b = self.touchAndMoveBitwiseApproach(3)
+        
+        #print("maryam ****")
+       
+        #print(self.state_as_BinaryArr)
+        #self.generateChildren()
+        #print(test2)
+        #print("maryam ****")
+
+                
+    def generateChildren(self):
+       for i in range(len(self.state_as_BinaryArr)):
+            arr = self.touchAndMoveBitwiseApproach(i)
+            str = arr.tostring()
+            childrenList.append(str)
+       return childrenList
+        
+
+    def generateChildrenAlreadyOrdered(self):
+        for i in range(len(self.state_as_BinaryArr)):
+            arr = self.touchAndMoveBitwiseApproach(i)
+            str = arr.tostring()
+            n = Node_BinaryRep(self, i,self.size, str,arr, self.depth + 1, self.cost + 1)
+            childrenList.append(n)
+
+
+    def goalStateTest(self ,size):
+        zeros_arr = np.zeros(len(self.state_as_BinaryArr), dtype = 'int')
+        return (np.array_equal(zeros_arr , self.state_as_BinaryArr))
+    
+    
+    def touchAndMoveBitwiseApproach(self , digit):
+        zeros_arr = np.zeros(len(self.state_as_BinaryArr), dtype = 'int')
+        indexNeedToChange =self.getValidIndexNeedToChange(digit)
+        
+        for i in indexNeedToChange:
+            zeros_arr[i] = 1
+       
+        result = np.bitwise_xor(zeros_arr , self.state_as_BinaryArr)
+        return (result)
+        
+
+    def getValidIndexNeedToChange(self , digit):
+        validIndexes = list() #order is top, bot , left , right
+        if (digit >-1 and digit < len(self.state_as_BinaryArr) ):
+            validIndexes.append(digit)
+            if(digit-self.offset >=0):#top neighbours
+                validIndexes.append(digit-self.offset)
+        
+            if( (digit%self.offset) != 0 ):#left neighbours
+                validIndexes.append(digit-1)
+        
+            if(digit+self.offset <len(self.state_as_BinaryArr)):#bot neighbour
+                validIndexes.append(digit+self.offset)
+
+            if((digit+1)%self.offset != 0):#right neighbours
+                 validIndexes.append(digit+1)
+        return validIndexes
+
+    def getNeighbours(self , digit):
+        neighbours = [-1,-1,-1,-1] #order is top, bot , left , right
+        if (digit >-1 and digit < len(self.state_as_BinaryArr) ):
+            if(digit-self.offset >=0):#top neighbours
+                neighbours[0]=self.state_as_BinaryArr[digit-self.offset]
+        
+            if( (digit%self.offset) != 0 ):#left neighbours
+                neighbours[2]=self.state_as_BinaryArr[digit-1]
+        
+            if(digit+self.offset <len(self.state_as_BinaryArr)):#bot neighbour
+                neighbours[1]=self.state_as_BinaryArr[digit+self.offset]
+
+            if((digit+1)%self.offset != 0):#right neighbours
+                 neighbours[3]=self.state_as_BinaryArr[digit+1]
+        return neighbours
+            
+
+
 class Node:
     def __init__(self, parent, index, state, depth, cost):
         self.parent = parent
@@ -123,7 +215,7 @@ class Puzzle:
         self.maxDepth = int(data[1])
         self.maxLength = int(data[2])
         self.stateString = data[3]
-
+        test = Node_BinaryRep('a',3,data[3])
         index = 0
         M = np.empty([self.size, self.size], dtype=int)
         for i in range(len(M)):
