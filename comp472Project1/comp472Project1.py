@@ -78,14 +78,13 @@ class Node_BinaryRep:
 
     def generateChildrenAlreadyOrdered(self):
         for i in range(len(self.state_as_BinaryArr)):
+            j = i // self.offset
             arr = self.touchAndMoveBitwiseApproach(i)
             str1 = str(arr)
             print (str1)
-            n = Node_BinaryRep(self, i,self.offset, str1 ,arr, self.depth + 1, self.cost + 1)
+            n = Node_BinaryRep(self, i,self.offset, str1 ,arr, self.depth + 1, self.cost + 1,Puzzle_Util.generateNodeLabel(i,j))
             self.children.append(n)
         self.children = sorted(self.children , key = attrgetter('stateStr') ,reverse = True)
-                
-
 
 
     def goalStateTest(self ,size):
