@@ -1,5 +1,11 @@
 import sys
 import numpy as np
+from enum import Enum
+
+class SearchType(Enum):
+    DFS = 1
+    BFS = 2
+    ASTAR = 3
 
 # unused at the moment
 class State:
@@ -135,6 +141,11 @@ class Puzzle:
         self.currentState = M
         self.root = Node(None, None, self.initialState, 1, 0)
 
+        # create empty solution path arrays, they will be filled backwards once the solution path is found
+        self.solutionPathLabels = list()
+        self.solutionPathStates = np.empty()
+        
+
         # construct mask matrix
         self.mask = np.empty([self.size+2, self.size+2], dtype=int)
         for row in range(len(self.mask)):
@@ -172,6 +183,9 @@ class Puzzle:
             return None
         return self.currentState.take(indices)
 
+    #def printSolution(self, type):
+        
+
 fileName = sys.argv[1]
 puzzleData = list()
 with open(str(fileName)) as file:
@@ -181,12 +195,12 @@ for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
 
-    print("parent node is: ", p.root)
-    p.root.generateChildren(p.size * p.size)
-    for i in range(len(p.root.children)):
-        print("child ", p.root.children[i], " of parent ", p.root.children[i].parent)
+    #print("parent node is: ", p.root)
+    #p.root.generateChildren(p.size * p.size)
+    #for i in range(len(p.root.children)):
+    #    print("child ", p.root.children[i], " of parent ", p.root.children[i].parent)
 
-    print("state of child 0: ")
-    print(p.root.children[0].state)
-    print("parent's state is: ")
-    print(p.root.children[0].parent.state)
+    #print("state of child 0: ")
+    #print(p.root.children[0].state)
+    #print("parent's state is: ")
+    #print(p.root.children[0].parent.state)
