@@ -82,7 +82,7 @@ class Puzzle:
                 print('No Solution')
                 #CREATE _DFS_SEARCH.TXT // JASON CODE
         
-        elif (self.isGoal(Node.state,self.size)):
+        elif (self.isGoal(Node.statestr,self.size)):
             print("JASON CODE TBD")
             #print DFS solution.txt // JASON CODE
 
