@@ -5,16 +5,16 @@ from collections import OrderedDict
 from enum import Enum
 
 class Row_Label(Enum):
-    A = 1
-    B = 2
-    C = 3
-    D = 4
-    E = 5
-    F = 6
-    G = 7
-    H = 8
-    I = 9
-    J = 10
+    A = 0
+    B = 1
+    C = 2
+    D = 3
+    E = 4
+    F = 5
+    G = 6
+    H = 7
+    I = 8
+    J = 9
 
 class SearchType(Enum):
     DFS = 1
@@ -28,7 +28,7 @@ class State:
 
 class Node_BinaryRep:
 
-    def __init__(self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost):
+    def __init__(self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost, label = "0"):
         self.parent = parent_Node
         self.index = index
         self.stateStr = stateStr
@@ -37,7 +37,7 @@ class Node_BinaryRep:
         self.offset = size
         self.state_as_BinaryArr = np.empty(self.offset*self.offset, dtype=int)
         self.children = list()
-        self.state_as_BinaryArr = state_as_BinaryArr
+        self.label = label
         self.fn = 0
         self.gn = 0
         self.hn = 0
@@ -82,11 +82,12 @@ class Node_BinaryRep:
 
     def generateChildrenAlreadyOrdered(self):
         for i in range(len(self.state_as_BinaryArr)):
-            j = i // self.offset
+            row = i // self.offset
+            col = i % self.offset
             arr = self.touchAndMoveBitwiseApproach(i)
             str1 = str(arr)
             print (str1)
-            n = Node_BinaryRep(self, i,self.offset, str1 ,arr, self.depth + 1, self.cost + 1,Puzzle_Util.generateNodeLabel(i,j))
+            n = Node_BinaryRep(self, i,self.offset, str1 ,arr, self.depth + 1, self.cost + 1,Puzzle_Util.generateNodeLabel(row,col))
             self.children.append(n)
         self.children = sorted(self.children , key = attrgetter('stateStr') ,reverse = True)
 
@@ -193,15 +194,17 @@ class Puzzle:
         
         if(node.depth>=self.maxDepth):
             #pop next element in stack
-            puzzleDFS(self.openList.popitem(last=True))
+            self.puzzleDFS(self.openList.popitem(last=True))
                 
             #IF stack if EMPTY , print "No Solution"
             if not bool(self.openList):
-                printSolutionPath(SearchType.DFS)
+                print('No Solution')
+                self.printSearchPath(SearchType.DFS)
         
         elif (self.isGoal(node.stateStr,self.size)):
-            createSolutionPath(node)
-            printSolutionPath(SearchType.DFS)
+            self.createSolutionPath(node)
+            self.printSolutionPath(SearchType.DFS)
+            self.printSearchPath(SearchType.DFS)
 
         else:
 
@@ -209,18 +212,19 @@ class Puzzle:
             self.closedList[node.stateStr] = node
 
             #THEN generate the node's children
-            node.generateChildrenAlreadyOrdered(self.size)
+            node.generateChildrenAlreadyOrdered()
             #IF NODE children do not have have higher depth than maxdepth, add them to OPEN LIST
             for item in node.children:
                 if (item.depth<self.maxDepth) and (item.stateStr not in self.closedList):
-                    closedList[item.stateStr]=item
+                    self.closedList[item.stateStr]=item
 
             #IF stack if EMPTY , print "No Solution"
             if not bool(self.openList):
                 print('No Solution')
-            
-            #POP next element on the Stack and visit
-            puzzleDFS(self.openList.popitem(last=True))
+                self.printSearchPath(SearchType.DFS)
+            else:
+                #POP next element on the Stack and visit
+                self.puzzleDFS(self.openList.popitem(last=True))
 
     def printSolutionPath(self, type):
         if type == SearchType.DFS:
@@ -281,3 +285,5 @@ with open(str(fileName)) as file:
 for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
+
+    p.puzzleDFS(p.root)
