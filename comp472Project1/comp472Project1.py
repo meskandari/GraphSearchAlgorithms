@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+from collections import OrderedDict
 from enum import Enum
 
 class SearchType(Enum):
@@ -20,6 +21,9 @@ class Node:
         self.depth = depth
         self.cost = cost
         self.children = list()
+        self.fn = 0
+        self.gn = 0
+        self.hn = 0
 
     def generateChildren(self, max):
         for i in range(max):
@@ -124,68 +128,63 @@ class Puzzle_Util:
         return output
 
 class Puzzle:
+    #static data member that keeps track of puzzle number
+    puzzleNumber = -1    
+
     def __init__(self, data):
+        self.puzzleNumber += 1
         self.size = int(data[0])
         self.maxDepth = int(data[1])
         self.maxLength = int(data[2])
         self.stateString = data[3]
-
         index = 0
-        M = np.empty([self.size, self.size], dtype=int)
-        for i in range(len(M)):
-            for j in range(len(M[i])):
-                M[i,j] = int(self.stateString[index])
-                index += 1
-        
-        self.initialState = M
-        self.currentState = M
-        self.root = Node(None, None, self.initialState, 1, 0)
+        self.root = Node(None, None, self.stateString, 1, 0)
 
         # create empty solution path arrays, they will be filled backwards once the solution path is found
         self.solutionPathLabels = list()
-        self.solutionPathStates = np.empty()
+        self.solutionPathStates = list()
+
         
 
-        # construct mask matrix
-        self.mask = np.empty([self.size+2, self.size+2], dtype=int)
-        for row in range(len(self.mask)):
-            for column in range(len(self.mask[row])):
-                # if top row or bottom row, pad with 0s
-                if row == 0 or row == (len(self.mask) - 1):
-                    self.mask[row, column] = 0
-                # if left column or right column, pad with 0s
-                elif column == 0 or column == (len(self.mask) - 1):
-                    self.mask[row, column] = 0
-                # otherwise place 1s in inner square
-                else:
-                    self.mask[row, column] = 1
+    def printSolutionPath(type):
+        if type == SearchType.DFS:
+            outputFileName = str(0) + "_dfs_solution.txt"
+        elif type == SearchType.BFS:
+            outputFileName = str(0) + "_bfs_solution.txt"
+        elif type == SearchType.BFS:
+            outputFileName = str(0) + "_astar_solution.txt"
 
-    # grab the immediate neighbours of the specified indices
-    # verifies the neighbours against the mask so it doesn't try to grab out of bounds
-    def getNeighbours(self, row, column):
-        try:
-            index = (row * self.size) + column
-            indices = list()
-            # top
-            if (self.mask[row, column+1] == 1):
-                indices.append(index - self.size)
-            # bottom
-            if (self.mask[row+2, column+1] == 1):
-                indices.append(index + self.size)
-            # left
-            if (self.mask[row+1, column] == 1):
-                indices.append(index - 1)
-            # right
-            if (self.mask[row+1, column+2] == 1):
-                indices.append(index + 1)
-        except IndexError:
-            print("One or more specified indices are out of bounds for Puzzle.getNeighbours(row, column)")
-            return None
-        return self.currentState.take(indices)
+        file = open(outputFileName, 'w')
 
-    #def printSolution(self, type):
-        
+        if self.solutionPathStates.size > 0:
+            for i in range(self.solutionPathStates.size - 1, -1, -1):
+                outputString = self.solutionPathLabels[i] + "\t"
+                for j in range(self.solutionPathStates[i].size):
+                    outputString += self.solutionPathStates[i][j] + " "
+                outputString += "\n"
+                file.write(outputString)
+        else:
+            file.write("No solution")
 
+        file.close()
+
+    def printSearchPath(type):
+        if type == SearchType.DFS:
+            outputFileName = str(0) + "_dfs_search.txt"
+        elif type == SearchType.BFS:
+            outputFileName = str(0) + "_bfs_search.txt"
+        elif type == SearchType.BFS:
+            outputFileName = str(0) + "_astar_search.txt"
+
+        file = open(outputFileName, 'w')
+
+        for key, value in self.closedList.items():
+            outputString = str(value.fn) + " " + str(value.gn) + " " + str(value.hn) + " " + key + "\n"
+            file.write(outputString)
+
+        file.close()
+
+#MAIN
 fileName = sys.argv[1]
 puzzleData = list()
 with open(str(fileName)) as file:
@@ -194,13 +193,3 @@ with open(str(fileName)) as file:
 for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
-
-    #print("parent node is: ", p.root)
-    #p.root.generateChildren(p.size * p.size)
-    #for i in range(len(p.root.children)):
-    #    print("child ", p.root.children[i], " of parent ", p.root.children[i].parent)
-
-    #print("state of child 0: ")
-    #print(p.root.children[0].state)
-    #print("parent's state is: ")
-    #print(p.root.children[0].parent.state)
