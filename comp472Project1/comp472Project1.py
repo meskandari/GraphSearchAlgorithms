@@ -181,32 +181,33 @@ class Puzzle:
     
     
     
-    def isGoal(givenArray,size):
-        goal = np.zeros((size, size)
+    def isGoal(self,givenArray,size):
+        goal = np.zeros((size, size))
         flatGoal = np.ravel(goal)
-        if (givenArray==flatGoal).all():
+        if  np.array_equal(flatGoal,givenArray):
             return True
-        else
+        else:
             return False
 
     
-    def puzzleDFS(state,Node):
+    def puzzleDFS(self,Node):
         
         if(Node.depth>=self.maxDepth):
             #pop next element in stack
             puzzleDFS(self.openList.popitem(last=True))
 
         
-        else if(isGoal(Node.state),self.size):
+        elif (self.isGoal(Node.state,self.size)):
+            print("CODE TBD")
             #print DFS solution.txt // to be written
 
         else:
 
-            #add Node.state to the CLOSED LIST
+            #add Node.state to the CLOSED LIST // DEPENDS ON TEAM DECISION
             self.closedList[Node.state] = Node
 
             #THEN generate the Node's children
-           Node.generateChildren(self.size)
+            Node.generateChildren(self.size)
             #IF NODE children do not have have higher depth than maxdepth, add them to OPEN LIST
             for item in Node.children:
                 if (item.depth<self.maxDepth) and (item.state not in self.closedList):
