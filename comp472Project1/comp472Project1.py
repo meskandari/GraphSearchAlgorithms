@@ -4,6 +4,7 @@ from operator import itemgetter, attrgetter
 from collections import OrderedDict
 from enum import Enum
 
+# An enum class for labelling cells in the puzzle matrix
 class RowLabel(Enum):
     A = 0
     B = 1
@@ -16,13 +17,16 @@ class RowLabel(Enum):
     I = 8
     J = 9
 
+# An enum class for flagging the type of search algorithm to use
 class SearchType(Enum):
     DFS = 1
     BFS = 2
     ASTAR = 3
 
+# The Node class contains all the attributes and methods needed to manage a node in a search tree
 class Node:
 
+    # constructor
     def __init__(self, parentNode, index, size, stateStr, stateBinary, depth, cost, label = "0"):
         self.parent = parentNode
         self.index = index
@@ -43,13 +47,10 @@ class Node:
         else:
             self.stateBinary = stateBinary
 
-    
-    @staticmethod
-    def stringToDecimal(stateStr):
-        return int(stateStr, 2)
-
+    # create the connected children of this node
     def generateChildren(self):
-        
+        # grab the coordinates for each cell
+        # perform a bitwise XOR on the cell and it's immediate neighbours
         for i in range(len(self.stateBinary)):
             row = i // self.offset
             col = i % self.offset
@@ -59,15 +60,19 @@ class Node:
             stateString = np.array2string(arr).replace(" ", "")
             stateString = str(stateString)[1:-1]
 
+            # generate a new node using the flipped state and add it to this node's list of children
             n = Node(self, i, self.offset, stateString , arr, self.depth + 1, self.cost + 1, PuzzleUtil.generateNodeLabel(row, col))
             self.children.append(n)
 
+        # sort the children in reverse order
         self.children = sorted(self.children , key = attrgetter('stateStr'), reverse = True)
     
     def flipXOR(self, digit):
+        # create a zero'd array of the same size as the current node's state
         binaryPattern = np.zeros(len(self.stateBinary), dtype = 'int')
-        indicesToChange = self.getNeighbours(digit)
         
+        # get the indices of the immediate neighbours of this cell, change the appropriate indices to 1
+        indicesToChange = self.getNeighbours(digit)
         for i in indicesToChange:
             binaryPattern[i] = 1
        
@@ -76,6 +81,7 @@ class Node:
     def getNeighbours(self, digit):
         validIndices = list()
 
+        # populate the valid Indices list with this cell's index and it's immediate neighbours' indices
         if -1 < digit < len(self.stateBinary):
             validIndices.append(digit)
 
@@ -97,22 +103,25 @@ class Node:
 
         return validIndices
             
+# A class containing useful utility methods
 class PuzzleUtil:
 
     def __init__(self):
         pass
 
-     # instance method to generate node labels
+    # method to generate node labels
     @staticmethod
     def generateNodeLabel(row, col):
         label = "".join([RowLabel(row).name, str(col + 1)])
         return label
 
+    # method that compares the given node's state to a zero array, returning true if they are equal
     @staticmethod
     def GoalStateTest(node):
         zeroArr = np.zeros(len(node.stateBinary), dtype = 'int')
         return np.array_equal(zeroArr, node.stateBinary)
 
+    # print the values in the array (for debugging)
     @staticmethod
     def printArray(arr):
         flat = np.ravel(arr)
@@ -120,6 +129,15 @@ class PuzzleUtil:
             print(i, end = " ")
         print()
 
+    # converts a binary string to it's decimal value
+    @staticmethod
+    def stringToDecimal(stateStr):
+        return int(stateStr, 2)
+
+# The puzzle class represents a particular puzzle configuration
+# the root node is the puzzle's initial state
+# the class contains methods to solve the puzzle using Depth First Search, generate solution and search paths,
+# and finally to print the results to a file
 class Puzzle:
     # static data member that keeps track of puzzle number
     puzzleNumber = -1
@@ -139,17 +157,19 @@ class Puzzle:
         # create empty solution path arrays, they will be filled backwards once the solution path is found
         self.solutionPath = list()
     
+    # recursively solve the puzzle using depth first search
     def puzzleDFS(self, node):
         if node.depth >= self.maxDepth:
             # pop next element in stack
             self.puzzleDFS(self.openList.popitem(last = True))
                 
-            # If stack is empty, print "No Solution"
+            # if stack is empty, print "No Solution"
             if self.openList is None:
                 self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
                 print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
         
+        # test if the current node is the goal state
         elif PuzzleUtil.GoalStateTest(node):
             self.closedList[node.stateStr] = node
             self.createSolutionPath(node)
@@ -157,6 +177,8 @@ class Puzzle:
             self.printSearchPath(SearchType.DFS)
             print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
 
+        # the current node wasn't the goal state, so add it to the closed list,
+        # generate it's children and recursively search the open list
         else:
             # add node.state to the closed list
             self.closedList[node.stateStr] = node
@@ -179,6 +201,18 @@ class Puzzle:
                 # pop next element on the Stack and visit
                 self.puzzleDFS(self.openList.popitem(last = True)[1])
 
+    # create a solution path from the goal state back to the root node
+    def createSolutionPath(self, node):
+        n = node
+        if n.parent is not None:
+            while(True):
+                self.solutionPath.append(n)
+                n = n.parent
+                if n.parent is None:
+                    self.solutionPath.append(n)
+                    break
+
+    # output the solution path to a file named after the given search algorithm
     def printSolutionPath(self, type):
         if type == SearchType.DFS:
             outputFileName = str(self.puzzleNumber) + "_dfs_solution.txt"
@@ -189,6 +223,7 @@ class Puzzle:
 
         file = open(outputFileName, 'w')
 
+        # if the solution path contains some items, then output them to a file
         if len(self.solutionPath) > 0:
             for i in range(len(self.solutionPath) - 1, -1, -1):
                 outputString = self.solutionPath[i].label + "\t"
@@ -196,11 +231,13 @@ class Puzzle:
                     outputString += self.solutionPath[i].stateStr[j] + " "
                 outputString += "\n"
                 file.write(outputString)
+        # otherwise there is no solution
         else:
             file.write("No solution")
 
         file.close()
 
+    # output the search path to a file named after the given search algorithm
     def printSearchPath(self, type):
         if type == SearchType.DFS:
             outputFileName = str(self.puzzleNumber) + "_dfs_search.txt"
@@ -217,22 +254,20 @@ class Puzzle:
 
         file.close()
 
-    def createSolutionPath(self, node):
-        n = node
-        if n.parent is not None:
-            while(True):
-                self.solutionPath.append(n)
-                n = n.parent
-                if n.parent is None:
-                    self.solutionPath.append(n)
-                    break
+    
 
 # MAIN
+
+# read the filename from the first command line argument
 fileName = sys.argv[1]
 puzzleData = list()
+
+# read the puzzle data into a list
 with open(str(fileName)) as file:
     puzzleData = file.readlines()
 
+# split the data by whitespace, and create a Puzzle object for each one,
+# then use depth first search to solve each puzzle
 for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
