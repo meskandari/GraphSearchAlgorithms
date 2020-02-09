@@ -73,6 +73,7 @@ class Node_BinaryRep:
             str1 = np.array2string(arr)
             str1 = str1.replace(" ", "")
             str1 = str(str1)[1:-1]
+
             #print (str1)
             #self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost, label = "0"):
             n = Node_BinaryRep(self, i,self.offset, str1 ,arr, self.depth + 1, self.cost + 1,Puzzle_Util.generateNodeLabel(row,col))
