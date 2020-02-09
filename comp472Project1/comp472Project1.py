@@ -45,6 +45,8 @@ class Node_BinaryRep:
         if(depth == 0):
             for i in range(len(self.state_as_BinaryArr)):
                 self.state_as_BinaryArr[i] = int(self.stateStr[i])
+        else:
+            self.state_as_BinaryArr = state_as_BinaryArr
 
     
     @staticmethod
@@ -67,10 +69,14 @@ class Node_BinaryRep:
             row = i // self.offset
             col = i % self.offset
             arr = self.touchAndMoveBitwiseApproach(i)
-            str1 = str(arr)
-            print (str1)
+            #str1 = str(arr)
+            str1 = np.array2string(arr)
+            str1 = str1.replace(" ", "")
+            str1 = str(str1)[1:-1]
+            #print (str1)
+            #self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost, label = "0"):
             n = Node_BinaryRep(self, i,self.offset, str1 ,arr, self.depth + 1, self.cost + 1,Puzzle_Util.generateNodeLabel(row,col))
-            print('I am at depth: ' + str(n.depth))
+            #print('I am at depth: ' + str(n.depth))
             self.children.append(n)
         self.children = sorted(self.children , key = attrgetter('stateStr') ,reverse = True)
 
@@ -164,20 +170,13 @@ class Puzzle:
         self.solutionPathLabels = list()
         self.solutionPathStates = list()
     
-    
-    #def isGoal(self,givenArray,size):
-    #    goal = np.zeros(size*size)
-    #    if  np.array_equal(goal,givenArray):
-    #        return True
-    #    else:
-    #        return False
 
     
     def puzzleDFS(self, node):
         
         if(node.depth>=self.maxDepth):
             #pop next element in stack
-            print('I am backtracking')
+            #print('I am backtracking')
             self.puzzleDFS(self.openList.popitem(last=True))
                 
             #IF stack if EMPTY , print "No Solution"
@@ -187,6 +186,7 @@ class Puzzle:
                 self.printSearchPath(SearchType.DFS)
         
         elif (node.goalStateTest(node.offset)):
+            self.closedList[node.stateStr] = node
             print('Solution found!')
             self.createSolutionPath(node)
             self.printSolutionPath(SearchType.DFS)
@@ -202,8 +202,9 @@ class Puzzle:
             #IF NODE children do not have have higher depth than maxdepth, add them to OPEN LIST
             for item in node.children:
                 if (item.depth<self.maxDepth) and (item.stateStr not in self.closedList):
-                    print('I am adding an item to openList')
+                    #print('I am adding an item to openList')
                     self.openList[item.stateStr]=item
+            
 
             #IF stack if EMPTY , print "No Solution"
             if not bool(self.openList):
@@ -212,7 +213,8 @@ class Puzzle:
                 self.printSearchPath(SearchType.DFS)
             else:
                 #POP next element on the Stack and visit
-                self.puzzleDFS(self.openList.popitem(last=True)[1])
+                b=self.openList.popitem(last=True)[1]
+                self.puzzleDFS(b)
 
     def printSolutionPath(self, type):
         if type == SearchType.DFS:
@@ -270,11 +272,7 @@ puzzleData = list()
 with open(str(fileName)) as file:
     puzzleData = file.readlines()
 
-#for data in puzzleData:
-#    data = data.split()
-#    p = Puzzle(data)
-#    p.puzzleDFS(p.root)
-
-data=puzzleData[1].split()
-p=Puzzle(data)
-p.puzzleDFS(p.root)
+for data in puzzleData:
+    data = data.split()
+    p = Puzzle(data)
+    p.puzzleDFS(p.root)
