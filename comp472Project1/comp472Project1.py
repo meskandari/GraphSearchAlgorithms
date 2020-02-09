@@ -165,12 +165,12 @@ class Puzzle:
         self.solutionPathStates = list()
     
     
-    def isGoal(self,givenArray,size):
-        goal = np.zeros(size*size)
-        if  np.array_equal(goal,givenArray):
-            return True
-        else:
-            return False
+    #def isGoal(self,givenArray,size):
+    #    goal = np.zeros(size*size)
+    #    if  np.array_equal(goal,givenArray):
+    #        return True
+    #    else:
+    #        return False
 
     
     def puzzleDFS(self, node):
@@ -183,9 +183,11 @@ class Puzzle:
             #IF stack if EMPTY , print "No Solution"
             if not bool(self.openList):
                 print('No Solution')
+                self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
         
-        elif (self.isGoal(node.stateStr,self.size)):
+        elif (node.goalStateTest(node.offset)):
+            print('Solution found!')
             self.createSolutionPath(node)
             self.printSolutionPath(SearchType.DFS)
             self.printSearchPath(SearchType.DFS)
@@ -206,6 +208,7 @@ class Puzzle:
             #IF stack if EMPTY , print "No Solution"
             if not bool(self.openList):
                 print('No Solution')
+                self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
             else:
                 #POP next element on the Stack and visit
@@ -221,7 +224,7 @@ class Puzzle:
 
         file = open(outputFileName, 'w')
 
-        if self.solutionPathStates.size > 0:
+        if len(self.solutionPathStates) > 0:
             for i in range(len(self.solutionPathStates) - 1, -1, -1):
                 outputString = self.solutionPathStates[i].label + "\t"
                 for j in range(len(self.solutionPathStates[i].stateStr)):
@@ -252,11 +255,11 @@ class Puzzle:
     def createSolutionPath(self, node):
         n = node
         if n.parent is not None:
-            while(true):
-                self.solutionPathStates.append(node)
+            while(True):
+                self.solutionPathStates.append(n)
                 n = n.parent
                 if n.parent is None:
-                    self.solutionPathStates.append(node)
+                    self.solutionPathStates.append(n)
                     break
                 
         
@@ -267,7 +270,11 @@ puzzleData = list()
 with open(str(fileName)) as file:
     puzzleData = file.readlines()
 
-for data in puzzleData:
-    data = data.split()
-    p = Puzzle(data)
-    p.puzzleDFS(p.root)
+#for data in puzzleData:
+#    data = data.split()
+#    p = Puzzle(data)
+#    p.puzzleDFS(p.root)
+
+data=puzzleData[1].split()
+p=Puzzle(data)
+p.puzzleDFS(p.root)
