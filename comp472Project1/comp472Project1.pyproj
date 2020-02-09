@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>comp472Project1</Name>
     <RootNamespace>comp472Project1</RootNamespace>
-    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>CondaEnv|CondaEnv|Anaconda3</InterpreterId>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <CommandLineArguments>test.txt</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
