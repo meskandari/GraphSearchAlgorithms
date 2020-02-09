@@ -67,7 +67,10 @@ class Node_BinaryRep:
             row = i // self.offset
             col = i % self.offset
             arr = self.touchAndMoveBitwiseApproach(i)
-            str1 = str(arr)
+            #str1 = str(arr)
+            str1 = np.array2string(arr)
+            str1 = str1.replace(" ", "")
+            str1 = str(str1)[1:-1]
             print (str1)
             n = Node_BinaryRep(self, i,self.offset, str1 ,arr, self.depth + 1, self.cost + 1,Puzzle_Util.generateNodeLabel(row,col))
             print('I am at depth: ' + str(n.depth))
@@ -164,13 +167,6 @@ class Puzzle:
         self.solutionPathLabels = list()
         self.solutionPathStates = list()
     
-    
-    #def isGoal(self,givenArray,size):
-    #    goal = np.zeros(size*size)
-    #    if  np.array_equal(goal,givenArray):
-    #        return True
-    #    else:
-    #        return False
 
     
     def puzzleDFS(self, node):
