@@ -148,12 +148,14 @@ class Puzzle:
             if self.openList is None:
                 self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
+                print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
         
         elif PuzzleUtil.GoalStateTest(node):
             self.closedList[node.stateStr] = node
             self.createSolutionPath(node)
             self.printSolutionPath(SearchType.DFS)
             self.printSearchPath(SearchType.DFS)
+            print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
 
         else:
             # add node.state to the closed list
@@ -172,6 +174,7 @@ class Puzzle:
             if not bool(self.openList):
                 self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
+                print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
             else:
                 # pop next element on the Stack and visit
                 self.puzzleDFS(self.openList.popitem(last = True)[1])
