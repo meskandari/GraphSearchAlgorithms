@@ -4,7 +4,7 @@ from operator import itemgetter, attrgetter
 from collections import OrderedDict
 from enum import Enum
 
-class Row_Label(Enum):
+class RowLabel(Enum):
     A = 0
     B = 1
     C = 2
@@ -21,137 +21,107 @@ class SearchType(Enum):
     BFS = 2
     ASTAR = 3
 
-# unused at the moment
-class State:
-    def __init__(self, state):
-        self.state = state
+class Node:
 
-class Node_BinaryRep:
-
-    def __init__(self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost, label = "0"):
-        self.parent = parent_Node
+    def __init__(self, parentNode, index, size, stateStr, stateBinary, depth, cost, label = "0"):
+        self.parent = parentNode
         self.index = index
         self.stateStr = stateStr
         self.depth = depth
         self.cost = cost
         self.offset = size
-        self.state_as_BinaryArr = np.empty(self.offset*self.offset, dtype=int)
+        self.stateBinary = np.empty(self.offset * self.offset, dtype=int)
         self.children = list()
         self.label = label
         self.fn = 0
         self.gn = 0
         self.hn = 0
            
-        if(depth == 0):
-            for i in range(len(self.state_as_BinaryArr)):
-                self.state_as_BinaryArr[i] = int(self.stateStr[i])
+        if depth == 0:
+            for i in range(len(self.stateBinary)):
+                self.stateBinary[i] = int(self.stateStr[i])
         else:
-            self.state_as_BinaryArr = state_as_BinaryArr
+            self.stateBinary = stateBinary
 
     
     @staticmethod
     def stringToDecimal(stateStr):
-        str1 = str(stateStr)
-        b = int(str1 ,2)
-        return b
-        
-    def generateChildren(self):
-       for i in range(len(self.state_as_BinaryArr)):
-            arr = self.touchAndMoveBitwiseApproach(i)
-            str = arr.tostring()
-            childrenList.append(str)
-       return childrenList
-        
+        return int(stateStr, 2)
 
-    def generateChildrenAlreadyOrdered(self):
+    def generateChildren(self):
         
-        for i in range(len(self.state_as_BinaryArr)):
+        for i in range(len(self.stateBinary)):
             row = i // self.offset
             col = i % self.offset
-            arr = self.touchAndMoveBitwiseApproach(i)
-            #str1 = str(arr)
-            str1 = np.array2string(arr)
-            str1 = str1.replace(" ", "")
-            str1 = str(str1)[1:-1]
+            arr = self.flipXOR(i)
 
-            #print (str1)
-            #self, parent_Node,index, size, stateStr,state_as_BinaryArr, depth, cost, label = "0"):
-            n = Node_BinaryRep(self, i,self.offset, str1 ,arr, self.depth + 1, self.cost + 1,Puzzle_Util.generateNodeLabel(row,col))
-            #print('I am at depth: ' + str(n.depth))
+            # remove whitespace and brackets
+            stateString = np.array2string(arr).replace(" ", "")
+            stateString = str(stateString)[1:-1]
+
+            n = Node(self, i, self.offset, stateString , arr, self.depth + 1, self.cost + 1, PuzzleUtil.generateNodeLabel(row, col))
             self.children.append(n)
-        self.children = sorted(self.children , key = attrgetter('stateStr') ,reverse = True)
 
-
-    def goalStateTest(self ,size):
-        zeros_arr = np.zeros(len(self.state_as_BinaryArr), dtype = 'int')
-        return (np.array_equal(zeros_arr , self.state_as_BinaryArr))
+        self.children = sorted(self.children , key = attrgetter('stateStr'), reverse = True)
     
-    
-    def touchAndMoveBitwiseApproach(self , digit):
-        zeros_arr = np.zeros(len(self.state_as_BinaryArr), dtype = 'int')
-        indexNeedToChange =self.getValidIndexNeedToChange(digit)
+    def flipXOR(self, digit):
+        binaryPattern = np.zeros(len(self.stateBinary), dtype = 'int')
+        indicesToChange = self.getNeighbours(digit)
         
-        for i in indexNeedToChange:
-            zeros_arr[i] = 1
+        for i in indicesToChange:
+            binaryPattern[i] = 1
        
-        result = np.bitwise_xor(zeros_arr , self.state_as_BinaryArr)
-        return (result)
-        
+        return np.bitwise_xor(binaryPattern, self.stateBinary)
 
-    def getValidIndexNeedToChange(self , digit):
-        validIndexes = list() #order is top, bot , left , right
-        if (digit >-1 and digit < len(self.state_as_BinaryArr) ):
-            validIndexes.append(digit)
-            if(digit-self.offset >=0):#top neighbours
-                validIndexes.append(digit-self.offset)
-        
-            if( (digit%self.offset) != 0 ):#left neighbours
-                validIndexes.append(digit-1)
-        
-            if(digit+self.offset <len(self.state_as_BinaryArr)):#bot neighbour
-                validIndexes.append(digit+self.offset)
+    def getNeighbours(self, digit):
+        validIndices = list()
 
-            if((digit+1)%self.offset != 0):#right neighbours
-                 validIndexes.append(digit+1)
-        return validIndexes
+        if -1 < digit < len(self.stateBinary):
+            validIndices.append(digit)
 
-    def getNeighbours(self , digit):
-        neighbours = [-1,-1,-1,-1] #order is top, bot , left , right
-        if (digit >-1 and digit < len(self.state_as_BinaryArr) ):
-            if(digit-self.offset >=0):#top neighbours
-                neighbours[0]=self.state_as_BinaryArr[digit-self.offset]
-        
-            if( (digit%self.offset) != 0 ):#left neighbours
-                neighbours[2]=self.state_as_BinaryArr[digit-1]
-        
-            if(digit+self.offset <len(self.state_as_BinaryArr)):#bot neighbour
-                neighbours[1]=self.state_as_BinaryArr[digit+self.offset]
+            # top neighbours
+            if (digit - self.offset) >= 0:
+                validIndices.append(digit - self.offset)
 
-            if((digit+1)%self.offset != 0):#right neighbours
-                 neighbours[3]=self.state_as_BinaryArr[digit+1]
-        return neighbours
+            # left neighbours
+            if (digit % self.offset) != 0:
+                validIndices.append(digit-1)
+
+            # bottom neighbour
+            if (digit + self.offset) < len(self.stateBinary):
+                validIndices.append(digit + self.offset)
+
+            # right neighbours
+            if ((digit + 1) % self.offset) != 0:
+                validIndices.append(digit+1)
+
+        return validIndices
             
-class Puzzle_Util:
+class PuzzleUtil:
 
     def __init__(self):
         pass
 
      # instance method to generate node labels
     @staticmethod
-    def generateNodeLabel(row , col):
+    def generateNodeLabel(row, col):
+        label = "".join([RowLabel(row).name, str(col + 1)])
+        return label
 
-        label_str = "".join([Row_Label(row).name, str(col+1)])
-        return(label_str)
+    @staticmethod
+    def GoalStateTest(node):
+        zeroArr = np.zeros(len(node.stateBinary), dtype = 'int')
+        return np.array_equal(zeroArr, node.stateBinary)
 
     @staticmethod
     def printArray(arr):
         flat = np.ravel(arr)
         for i in flat:
-            print(i,end =" ")
+            print(i, end = " ")
         print()
 
 class Puzzle:
-    #static data member that keeps track of puzzle number
+    # static data member that keeps track of puzzle number
     puzzleNumber = -1
 
     def __init__(self, data):
@@ -160,62 +130,54 @@ class Puzzle:
         self.maxDepth = int(data[1])
         self.maxLength = int(data[2])
         self.stateString = data[3]
-        index = 0
-        self.root = Node_BinaryRep(None,0,self.size,self.stateString,None,0,0)
+        self.root = Node(None, 0, self.size, self.stateString, None, 0, 0)
 
         # initialize closed list and open list
         self.closedList = OrderedDict()
         self.openList = OrderedDict()
 
         # create empty solution path arrays, they will be filled backwards once the solution path is found
-        self.solutionPathLabels = list()
-        self.solutionPathStates = list()
-    
-
+        self.solutionPath = list()
     
     def puzzleDFS(self, node):
-        
-        if(node.depth>=self.maxDepth):
-            #pop next element in stack
-            #print('I am backtracking')
-            self.puzzleDFS(self.openList.popitem(last=True))
+        if node.depth >= self.maxDepth:
+            # pop next element in stack
+            self.puzzleDFS(self.openList.popitem(last = True))
                 
-            #IF stack if EMPTY , print "No Solution"
-            if not bool(self.openList):
-                print('No Solution')
+            # If stack is empty, print "No Solution"
+            if self.openList is None:
                 self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
+                print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
         
-        elif (node.goalStateTest(node.offset)):
+        elif PuzzleUtil.GoalStateTest(node):
             self.closedList[node.stateStr] = node
-            print('Solution found!')
             self.createSolutionPath(node)
             self.printSolutionPath(SearchType.DFS)
             self.printSearchPath(SearchType.DFS)
+            print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
 
         else:
-
-            #add node.state to the CLOSED LIST // DEPENDS ON TEAM DECISION
+            # add node.state to the closed list
             self.closedList[node.stateStr] = node
 
-            #THEN generate the node's children
-            node.generateChildrenAlreadyOrdered()
-            #IF NODE children do not have have higher depth than maxdepth, add them to OPEN LIST
+            # generate the node's children
+            node.generateChildren()
+
+            # verify that children depth is less than max before adding to open list
             for item in node.children:
-                if (item.depth<self.maxDepth) and (item.stateStr not in self.closedList):
-                    #print('I am adding an item to openList')
-                    self.openList[item.stateStr]=item
+                if (item.depth < self.maxDepth) and (item.stateStr not in self.closedList):
+                    self.openList[item.stateStr] = item
             
 
-            #IF stack if EMPTY , print "No Solution"
+            # if stack is empty, print "No Solution"
             if not bool(self.openList):
-                print('No Solution')
                 self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
+                print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
             else:
-                #POP next element on the Stack and visit
-                b=self.openList.popitem(last=True)[1]
-                self.puzzleDFS(b)
+                # pop next element on the Stack and visit
+                self.puzzleDFS(self.openList.popitem(last = True)[1])
 
     def printSolutionPath(self, type):
         if type == SearchType.DFS:
@@ -227,11 +189,11 @@ class Puzzle:
 
         file = open(outputFileName, 'w')
 
-        if len(self.solutionPathStates) > 0:
-            for i in range(len(self.solutionPathStates) - 1, -1, -1):
-                outputString = self.solutionPathStates[i].label + "\t"
-                for j in range(len(self.solutionPathStates[i].stateStr)):
-                    outputString += self.solutionPathStates[i].stateStr[j] + " "
+        if len(self.solutionPath) > 0:
+            for i in range(len(self.solutionPath) - 1, -1, -1):
+                outputString = self.solutionPath[i].label + "\t"
+                for j in range(len(self.solutionPath[i].stateStr)):
+                    outputString += self.solutionPath[i].stateStr[j] + " "
                 outputString += "\n"
                 file.write(outputString)
         else:
@@ -259,15 +221,13 @@ class Puzzle:
         n = node
         if n.parent is not None:
             while(True):
-                self.solutionPathStates.append(n)
+                self.solutionPath.append(n)
                 n = n.parent
                 if n.parent is None:
-                    self.solutionPathStates.append(n)
+                    self.solutionPath.append(n)
                     break
-                
-        
 
-#MAIN
+# MAIN
 fileName = sys.argv[1]
 puzzleData = list()
 with open(str(fileName)) as file:
