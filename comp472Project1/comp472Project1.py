@@ -166,7 +166,7 @@ class Puzzle:
 
             # verify that children depth is less than max before adding to open list
             for item in node.children:
-                if (item.depth < self.maxDepth) and (item.stateStr not in self.closedList):
+                if (item.depth < self.maxDepth) and (item.stateStr not in self.closedList) and (item.stateStr not in self.openList):
                     self.openList[item.stateStr] = item
             
 
