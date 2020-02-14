@@ -4,6 +4,9 @@ from operator import itemgetter, attrgetter
 from collections import OrderedDict
 from enum import Enum
 
+
+
+
 # An enum class for labelling cells in the puzzle matrix
 class RowLabel(Enum):
     A = 0
@@ -41,7 +44,7 @@ class Node:
         self.gn = 0
         self.hn = 0
            
-        if depth == 0:
+        if depth == -1:
             for i in range(len(self.stateBinary)):
                 self.stateBinary[i] = int(self.stateStr[i])
         else:
@@ -73,7 +76,9 @@ class Node:
         
         # get the indices of the immediate neighbours of this cell, change the appropriate indices to 1
         indicesToChange = self.getNeighbours(digit)
+        #test = self.stateBinary[:]
         for i in indicesToChange:
+            #test[i]=1-test[i]
             binaryPattern[i] = 1
        
         return np.bitwise_xor(binaryPattern, self.stateBinary)
@@ -148,7 +153,7 @@ class Puzzle:
         self.maxDepth = int(data[1])
         self.maxLength = int(data[2])
         self.stateString = data[3]
-        self.root = Node(None, 0, self.size, self.stateString, None, 0, 0)
+        self.root = Node(None, 0, self.size, self.stateString, None, -1, 0)
 
         # initialize closed list and open list
         self.closedList = OrderedDict()
@@ -159,47 +164,52 @@ class Puzzle:
     
     # recursively solve the puzzle using depth first search
     def puzzleDFS(self, node):
-        if node.depth >= self.maxDepth:
-            # pop next element in stack
-            self.puzzleDFS(self.openList.popitem(last = True))
+
+        while(node):
+            if node.depth >= self.maxDepth:
+                # pop next element in stack
+                node=self.openList.popitem(last = True)
                 
-            # if stack is empty, print "No Solution"
-            if self.openList is None:
+                # if stack is empty, print "No Solution"
+                if self.openList is None:
+                    self.printSolutionPath(SearchType.DFS)
+                    self.printSearchPath(SearchType.DFS)
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                    node= None
+        
+            # test if the current node is the goal state
+            elif PuzzleUtil.GoalStateTest(node):
+                self.closedList[node.stateStr] = node
+                self.createSolutionPath(node)
                 self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
-                print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
-        
-        # test if the current node is the goal state
-        elif PuzzleUtil.GoalStateTest(node):
-            self.closedList[node.stateStr] = node
-            self.createSolutionPath(node)
-            self.printSolutionPath(SearchType.DFS)
-            self.printSearchPath(SearchType.DFS)
-            print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
+                print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
+                node= None
 
-        # the current node wasn't the goal state, so add it to the closed list,
-        # generate it's children and recursively search the open list
-        else:
-            # add node.state to the closed list
-            self.closedList[node.stateStr] = node
+            # the current node wasn't the goal state, so add it to the closed list,
+            # generate it's children and recursively search the open list
+            else:
+                # add node.state to the closed list
+                self.closedList[node.stateStr] = node
 
-            # generate the node's children
-            node.generateChildren()
+                # generate the node's children
+                node.generateChildren()
 
-            # verify that children depth is less than max before adding to open list
-            for item in node.children:
-                if (item.depth < self.maxDepth) and (item.stateStr not in self.closedList) and (item.stateStr not in self.openList):
-                    self.openList[item.stateStr] = item
+                # verify that children depth is less than max before adding to open list
+                for item in node.children:
+                    if (item.depth < self.maxDepth) and (item.stateStr not in self.closedList) and (item.stateStr not in self.openList):
+                        self.openList[item.stateStr] = item
             
 
-            # if stack is empty, print "No Solution"
-            if not bool(self.openList):
-                self.printSolutionPath(SearchType.DFS)
-                self.printSearchPath(SearchType.DFS)
-                print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
-            else:
-                # pop next element on the Stack and visit
-                self.puzzleDFS(self.openList.popitem(last = True)[1])
+                # if stack is empty, print "No Solution"
+                if not bool(self.openList):
+                    self.printSolutionPath(SearchType.DFS)
+                    self.printSearchPath(SearchType.DFS)
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                    node= None
+                else:
+                    # pop next element on the Stack and visit
+                    node=self.openList.popitem(last = True)[1]
 
     # create a solution path from the goal state back to the root node
     def createSolutionPath(self, node):
@@ -271,4 +281,5 @@ with open(str(fileName)) as file:
 for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
+    #print(data)
     p.puzzleDFS(p.root)
