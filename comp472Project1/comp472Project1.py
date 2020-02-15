@@ -3,7 +3,7 @@ import numpy as np
 from operator import itemgetter, attrgetter
 from collections import OrderedDict
 from enum import Enum
-
+import time
 
 
 
@@ -164,7 +164,7 @@ class Puzzle:
     
     # recursively solve the puzzle using depth first search
     def puzzleDFS(self, node):
-
+        startTime = time.time()
         while(node):
             if node.depth >= self.maxDepth:
                 # pop next element in stack
@@ -176,6 +176,8 @@ class Puzzle:
                     self.printSearchPath(SearchType.DFS)
                     print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
+                    endTime = time.time()
+                    print("This conclusion was reached in %g seconds" % (endTime - startTime))
         
             # test if the current node is the goal state
             elif PuzzleUtil.GoalStateTest(node):
@@ -185,6 +187,8 @@ class Puzzle:
                 self.printSearchPath(SearchType.DFS)
                 print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
                 node= None
+                endTime = time.time()
+                print("This conclusion was reached in %g seconds" % (endTime - startTime))
 
             # the current node wasn't the goal state, so add it to the closed list,
             # generate it's children and recursively search the open list
@@ -207,6 +211,8 @@ class Puzzle:
                     self.printSearchPath(SearchType.DFS)
                     print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
+                    endTime = time.time()
+                    print("This conclusion was reached in %g seconds" % (endTime - startTime))
                 else:
                     # pop next element on the Stack and visit
                     node=self.openList.popitem(last = True)[1]
