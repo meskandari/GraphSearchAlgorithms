@@ -164,6 +164,7 @@ class Puzzle:
         self.maxLength = int(data[2])
         self.stateString = data[3]
         self.root = Node(None, 0, self.size, self.stateString, None, -1, 0)
+        self.searchPathLength = 0
 
         # initialize closed list and open list
         self.closedList = OrderedDict()
@@ -228,7 +229,7 @@ class Puzzle:
                     node=self.openList.popitem(last = True)[1]
 
     def puzzleBFS(self, node):
-        print("BFS started...")
+        ''' Proof of Concept
         node.generateChildren()
 
         for item in node.children:
@@ -236,20 +237,19 @@ class Puzzle:
         self.sortOpenList()
         print(self.openList)
         '''
+
         startTime = time.time()
         while(node):
-            if node.depth >= self.maxDepth:
+            self.searchPathLength+=1
+            if self.searchPathLength >= self.maxDepth:
                 # pop next element in stack
-                node=self.openList.popitem(last = True)
-                
-                # if stack is empty, print "No Solution"
-                if self.openList is None:
-                    self.printSolutionPath(SearchType.DFS)
-                    self.printSearchPath(SearchType.DFS)
-                    print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
-                    node= None
-                    endTime = time.time()
-                    print("This conclusion was reached in %g seconds" % (endTime - startTime))
+                self.printSolutionPath(SearchType.DFS)
+                self.printSearchPath(SearchType.DFS)
+                print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                node= None
+                endTime = time.time()
+                print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
+ 
         
             # test if the current node is the goal state
             elif PuzzleUtil.GoalStateTest(node):
@@ -260,7 +260,7 @@ class Puzzle:
                 print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
                 node= None
                 endTime = time.time()
-                print("This conclusion was reached in %g seconds" % (endTime - startTime))
+                print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
 
             # the current node wasn't the goal state, so add it to the closed list,
             # generate it's children and recursively search the open list
@@ -269,29 +269,30 @@ class Puzzle:
                 self.closedList[node.stateStr] = node
 
                 # generate the node's children
-                node.generateChildren("DFS")
+                node.generateChildren()
 
                 # verify that children depth is less than max before adding to open list
                 for item in node.children:
-                    if (item.depth < self.maxDepth) and (item.stateStr not in self.closedList) and (item.stateStr not in self.openList):
+                    if (item.stateStr not in self.closedList) and (item.stateStr not in self.openList):
                         self.openList[item.stateStr] = item
             
-
-                # if stack is empty, print "No Solution"
+                # sort the open list in ascending order of h(n)
+                self.sortOpenList()
+                # if list is empty, print "No Solution"
                 if not bool(self.openList):
                     self.printSolutionPath(SearchType.DFS)
                     self.printSearchPath(SearchType.DFS)
                     print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
                     endTime = time.time()
-                    print("This conclusion was reached in %g seconds" % (endTime - startTime))
+                    print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
                 else:
-                    # pop next element on the Stack and visit
-                    node=self.openList.popitem(last = True)[1]
-            '''
+                    # pop next element on the list and visit
+                    node=self.openList.popitem(last = False)[1]
+            
 
     def sortOpenList(self):
-       self.openList =sorted(self.openList.items(), key = lambda node: node[1].hn)
+       self.openList =OrderedDict(sorted(self.openList.items(), key = lambda node: node[1].hn))
 
     # create a solution path from the goal state back to the root node
     def createSolutionPath(self, node):
