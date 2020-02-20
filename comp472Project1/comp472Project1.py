@@ -70,7 +70,7 @@ class Node:
             n = Node(self, i, self.offset, stateString , arr, self.depth + 1, self.cost + 1, PuzzleUtil.generateNodeLabel(row, col))
             self.children.append(n)
         
-        if (searchType=="DFS"):
+        if (searchType==SearchType.DFS):
             # sort the children in reverse order
             self.children = sorted(self.children , key = attrgetter('stateStr'), reverse = True)
     
@@ -188,7 +188,7 @@ class Puzzle:
                     print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
                     endTime = time.time()
-                    print("This conclusion was reached in %g seconds" % (endTime - startTime))
+                    print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
         
             # test if the current node is the goal state
             elif PuzzleUtil.GoalStateTest(node):
@@ -199,7 +199,7 @@ class Puzzle:
                 print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
                 node= None
                 endTime = time.time()
-                print("This conclusion was reached in %g seconds" % (endTime - startTime))
+                print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
 
             # the current node wasn't the goal state, so add it to the closed list,
             # generate it's children and recursively search the open list
@@ -208,7 +208,7 @@ class Puzzle:
                 self.closedList[node.stateStr] = node
 
                 # generate the node's children
-                node.generateChildren("DFS")
+                node.generateChildren(SearchType.DFS)
 
                 # verify that children depth is less than max before adding to open list
                 for item in node.children:
@@ -223,7 +223,7 @@ class Puzzle:
                     print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
                     endTime = time.time()
-                    print("This conclusion was reached in %g seconds" % (endTime - startTime))
+                    print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
                 else:
                     # pop next element on the Stack and visit
                     node=self.openList.popitem(last = True)[1]
@@ -241,22 +241,23 @@ class Puzzle:
         startTime = time.time()
         while(node):
             self.searchPathLength+=1
-            if self.searchPathLength >= self.maxDepth:
+            if self.searchPathLength >= self.maxLength:
                 # pop next element in stack
-                self.printSolutionPath(SearchType.DFS)
-                self.printSearchPath(SearchType.DFS)
+                self.printSolutionPath(SearchType.BFS)
+                self.printSearchPath(SearchType.BFS)
                 print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                 node= None
                 endTime = time.time()
                 print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
+                print("Timed-out after reaching max search path of %s " % self.searchPathLength)
  
         
             # test if the current node is the goal state
             elif PuzzleUtil.GoalStateTest(node):
                 self.closedList[node.stateStr] = node
                 self.createSolutionPath(node)
-                self.printSolutionPath(SearchType.DFS)
-                self.printSearchPath(SearchType.DFS)
+                self.printSolutionPath(SearchType.BFS)
+                self.printSearchPath(SearchType.BFS)
                 print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
                 node= None
                 endTime = time.time()
@@ -280,8 +281,8 @@ class Puzzle:
                 self.sortOpenList()
                 # if list is empty, print "No Solution"
                 if not bool(self.openList):
-                    self.printSolutionPath(SearchType.DFS)
-                    self.printSearchPath(SearchType.DFS)
+                    self.printSolutionPath(SearchType.BFS)
+                    self.printSearchPath(SearchType.BFS)
                     print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
                     endTime = time.time()
@@ -366,6 +367,6 @@ for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
     #print(data)
-    #p.puzzleDFS(p.root)
+    p.puzzleDFS(p.root)
     p.puzzleBFS(p.root)
 
