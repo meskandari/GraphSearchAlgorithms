@@ -229,7 +229,12 @@ class Puzzle:
 
     def puzzleBFS(self, node):
         print("BFS started...")
-        print(node.hn)
+        node.generateChildren()
+
+        for item in node.children:
+            self.openList[item.stateStr] = item
+        self.sortOpenList()
+        print(self.openList)
         '''
         startTime = time.time()
         while(node):
@@ -284,6 +289,10 @@ class Puzzle:
                     # pop next element on the Stack and visit
                     node=self.openList.popitem(last = True)[1]
             '''
+
+    def sortOpenList(self):
+       self.openList =sorted(self.openList.items(), key = lambda node: node[1].hn)
+
     # create a solution path from the goal state back to the root node
     def createSolutionPath(self, node):
         n = node
