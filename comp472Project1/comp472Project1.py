@@ -30,7 +30,7 @@ class SearchType(Enum):
 class Node:
 
     # constructor
-    def __init__(self, parentNode, index, size, stateStr, stateBinary, depth, cost, label = "0"):
+    def __init__(self, parentNode, index, size, stateStr, stateBinary, depth, cost, label = "0", hn=0):
         self.parent = parentNode
         self.index = index
         self.stateStr = stateStr
@@ -42,7 +42,7 @@ class Node:
         self.label = label
         self.fn = 0
         self.gn = 0
-        self.hn = 0
+        self.hn = hn
            
         if depth == -1:
             for i in range(len(self.stateBinary)):
@@ -107,6 +107,9 @@ class Node:
                 validIndices.append(digit+1)
 
         return validIndices
+
+    def evaluateNode(self):
+        print ("Evaluation")
             
 # A class containing useful utility methods
 class PuzzleUtil:
@@ -217,6 +220,65 @@ class Puzzle:
                     # pop next element on the Stack and visit
                     node=self.openList.popitem(last = True)[1]
 
+    def puzzleBFS(self, node):
+        startTime = time.time()
+        while(node):
+            
+            
+            
+            
+            '''
+            if node.depth >= self.maxDepth:
+                # pop next element in stack
+                node=self.openList.popitem(last = True)
+                
+                # if stack is empty, print "No Solution"
+                if self.openList is None:
+                    self.printSolutionPath(SearchType.DFS)
+                    self.printSearchPath(SearchType.DFS)
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                    node= None
+                    endTime = time.time()
+                    print("This conclusion was reached in %g seconds" % (endTime - startTime))
+        
+            # test if the current node is the goal state
+            elif PuzzleUtil.GoalStateTest(node):
+                self.closedList[node.stateStr] = node
+                self.createSolutionPath(node)
+                self.printSolutionPath(SearchType.DFS)
+                self.printSearchPath(SearchType.DFS)
+                print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
+                node= None
+                endTime = time.time()
+                print("This conclusion was reached in %g seconds" % (endTime - startTime))
+
+            # the current node wasn't the goal state, so add it to the closed list,
+            # generate it's children and recursively search the open list
+            else:
+                # add node.state to the closed list
+                self.closedList[node.stateStr] = node
+
+                # generate the node's children
+                node.generateChildren()
+
+                # verify that children depth is less than max before adding to open list
+                for item in node.children:
+                    if (item.depth < self.maxDepth) and (item.stateStr not in self.closedList) and (item.stateStr not in self.openList):
+                        self.openList[item.stateStr] = item
+            
+
+                # if stack is empty, print "No Solution"
+                if not bool(self.openList):
+                    self.printSolutionPath(SearchType.DFS)
+                    self.printSearchPath(SearchType.DFS)
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                    node= None
+                    endTime = time.time()
+                    print("This conclusion was reached in %g seconds" % (endTime - startTime))
+                else:
+                    # pop next element on the Stack and visit
+                    node=self.openList.popitem(last = True)[1]
+            '''
     # create a solution path from the goal state back to the root node
     def createSolutionPath(self, node):
         n = node
