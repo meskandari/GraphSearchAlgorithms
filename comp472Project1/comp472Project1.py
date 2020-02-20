@@ -43,12 +43,15 @@ class Node:
         self.fn = 0
         self.gn = 0
         self.hn = hn
+
            
         if depth == -1:
             for i in range(len(self.stateBinary)):
                 self.stateBinary[i] = int(self.stateStr[i])
         else:
             self.stateBinary = stateBinary
+
+        self.evaluateNode()
 
     # create the connected children of this node
     def generateChildren(self):
@@ -108,8 +111,11 @@ class Node:
 
         return validIndices
 
-    def evaluateNode(self):
-        print ("Evaluation")
+    #BFS Heuristics
+    def evaluateNode(self):  
+        #print(self.stateBinary)
+        self.hn = np.count_nonzero(self.stateBinary == 1)
+        
             
 # A class containing useful utility methods
 class PuzzleUtil:
@@ -221,13 +227,11 @@ class Puzzle:
                     node=self.openList.popitem(last = True)[1]
 
     def puzzleBFS(self, node):
+        print("BFS started...")
+        print(node.hn)
+        '''
         startTime = time.time()
         while(node):
-            
-            
-            
-            
-            '''
             if node.depth >= self.maxDepth:
                 # pop next element in stack
                 node=self.openList.popitem(last = True)
@@ -337,7 +341,8 @@ class Puzzle:
 # MAIN
 
 # read the filename from the first command line argument
-fileName = sys.argv[1]
+#fileName = sys.argv[1]
+fileName = "test1.txt"
 puzzleData = list()
 
 # read the puzzle data into a list
@@ -350,4 +355,6 @@ for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
     #print(data)
-    p.puzzleDFS(p.root)
+    #p.puzzleDFS(p.root)
+    p.puzzleBFS(p.root)
+
