@@ -113,8 +113,8 @@ class Node:
 
     #BFS Heuristics
     def evaluateNode(self):  
-        #print(self.stateBinary)
-        self.hn = np.count_nonzero(self.stateBinary == 1)
+        print(self.stateBinary)
+        self.hn = np.count_nonzero(self.stateBinary == 0)
         
             
 # A class containing useful utility methods
