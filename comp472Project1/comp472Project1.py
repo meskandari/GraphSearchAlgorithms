@@ -115,7 +115,11 @@ class Node:
     #BFS Heuristics
     def evaluateNode(self):  
         #print(self.stateBinary)
-        self.hn = np.count_nonzero(self.stateBinary == 1)
+        distanceToGoal = np.count_nonzero(self.stateBinary == 1)
+        if distanceToGoal<5:
+            self.hn = min((distanceToGoal%3),(distanceToGoal%4))
+        else:
+            self.hn = distanceToGoal
         
             
 # A class containing useful utility methods
