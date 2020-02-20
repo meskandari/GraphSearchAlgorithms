@@ -54,7 +54,7 @@ class Node:
         self.evaluateNode()
 
     # create the connected children of this node
-    def generateChildren(self):
+    def generateChildren(self, searchType=""):
         # grab the coordinates for each cell
         # perform a bitwise XOR on the cell and it's immediate neighbours
         for i in range(len(self.stateBinary)):
@@ -69,9 +69,10 @@ class Node:
             # generate a new node using the flipped state and add it to this node's list of children
             n = Node(self, i, self.offset, stateString , arr, self.depth + 1, self.cost + 1, PuzzleUtil.generateNodeLabel(row, col))
             self.children.append(n)
-
-        # sort the children in reverse order
-        self.children = sorted(self.children , key = attrgetter('stateStr'), reverse = True)
+        
+        if (searchType=="DFS"):
+            # sort the children in reverse order
+            self.children = sorted(self.children , key = attrgetter('stateStr'), reverse = True)
     
     def flipXOR(self, digit):
         # create a zero'd array of the same size as the current node's state
@@ -113,8 +114,8 @@ class Node:
 
     #BFS Heuristics
     def evaluateNode(self):  
-        print(self.stateBinary)
-        self.hn = np.count_nonzero(self.stateBinary == 0)
+        #print(self.stateBinary)
+        self.hn = np.count_nonzero(self.stateBinary == 1)
         
             
 # A class containing useful utility methods
@@ -206,7 +207,7 @@ class Puzzle:
                 self.closedList[node.stateStr] = node
 
                 # generate the node's children
-                node.generateChildren()
+                node.generateChildren("DFS")
 
                 # verify that children depth is less than max before adding to open list
                 for item in node.children:
@@ -263,7 +264,7 @@ class Puzzle:
                 self.closedList[node.stateStr] = node
 
                 # generate the node's children
-                node.generateChildren()
+                node.generateChildren("DFS")
 
                 # verify that children depth is less than max before adding to open list
                 for item in node.children:
