@@ -189,6 +189,8 @@ class Puzzle:
                     node= None
                     endTime = time.time()
                     print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
+                    self.clearPuzzle()
+                    break
         
             # test if the current node is the goal state
             elif PuzzleUtil.GoalStateTest(node):
@@ -200,6 +202,8 @@ class Puzzle:
                 node= None
                 endTime = time.time()
                 print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
+                self.clearPuzzle()
+                break
 
             # the current node wasn't the goal state, so add it to the closed list,
             # generate it's children and recursively search the open list
@@ -224,25 +228,20 @@ class Puzzle:
                     node= None
                     endTime = time.time()
                     print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
+                    self.clearPuzzle()
+                    break
                 else:
                     # pop next element on the Stack and visit
                     node=self.openList.popitem(last = True)[1]
 
     def puzzleBFS(self, node):
-        ''' Proof of Concept
-        node.generateChildren()
-
-        for item in node.children:
-            self.openList[item.stateStr] = item
-        self.sortOpenList()
-        print(self.openList)
-        '''
-
         startTime = time.time()
         while(node):
+            #increase cost of search
             self.searchPathLength+=1
+
+            # verify is maximum search path length is not reached, if so exit
             if self.searchPathLength >= self.maxLength:
-                # pop next element in stack
                 self.printSolutionPath(SearchType.BFS)
                 self.printSearchPath(SearchType.BFS)
                 print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
@@ -250,6 +249,8 @@ class Puzzle:
                 endTime = time.time()
                 print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
                 print("Timed-out after reaching max search path of %s " % self.searchPathLength)
+                self.clearPuzzle()
+                break
  
         
             # test if the current node is the goal state
@@ -262,6 +263,8 @@ class Puzzle:
                 node= None
                 endTime = time.time()
                 print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
+                self.clearPuzzle()
+                break
 
             # the current node wasn't the goal state, so add it to the closed list,
             # generate it's children and recursively search the open list
@@ -287,6 +290,8 @@ class Puzzle:
                     node= None
                     endTime = time.time()
                     print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
+                    self.clearPuzzle()
+                    break
                 else:
                     # pop next element on the list and visit
                     node=self.openList.popitem(last = False)[1]
@@ -294,6 +299,12 @@ class Puzzle:
 
     def sortOpenList(self):
        self.openList =OrderedDict(sorted(self.openList.items(), key = lambda node: node[1].hn))
+
+    def clearPuzzle(self):
+        self.searchPathLength=0
+        self.closedList.clear()
+        self.openList.clear()
+        del self.solutionPath[:]
 
     # create a solution path from the goal state back to the root node
     def createSolutionPath(self, node):
@@ -353,8 +364,8 @@ class Puzzle:
 # MAIN
 
 # read the filename from the first command line argument
-#fileName = sys.argv[1]
-fileName = "test1.txt"
+fileName = sys.argv[1]
+#fileName = "test1.txt"
 puzzleData = list()
 
 # read the puzzle data into a list
