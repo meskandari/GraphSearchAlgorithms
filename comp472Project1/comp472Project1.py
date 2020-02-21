@@ -40,9 +40,9 @@ class Node:
         self.stateBinary = np.empty(self.offset * self.offset, dtype=int)
         self.children = list()
         self.label = label
-        self.fn = 0
-        self.gn = 0
+        self.gn = depth
         self.hn = hn
+        self.fn = self.hn + self.gn
 
            
         if depth == -1:
@@ -54,7 +54,7 @@ class Node:
         self.evaluateNode()
 
     # create the connected children of this node
-    def generateChildren(self, searchType=""):
+    def generateChildren(self, searchType=0):
         # grab the coordinates for each cell
         # perform a bitwise XOR on the cell and it's immediate neighbours
         for i in range(len(self.stateBinary)):
@@ -116,8 +116,8 @@ class Node:
     def evaluateNode(self):  
         #print(self.stateBinary)
         distanceToGoal = np.count_nonzero(self.stateBinary == 1)
-        if distanceToGoal<5:
-            self.hn = min((distanceToGoal%3),(distanceToGoal%4))
+        if distanceToGoal<6:
+            self.hn = min((distanceToGoal%3),(distanceToGoal%4),(distanceToGoal%5))
         else:
             self.hn = distanceToGoal
         
@@ -285,7 +285,7 @@ class Puzzle:
                         self.openList[item.stateStr] = item
             
                 # sort the open list in ascending order of h(n)
-                self.sortOpenList()
+                self.sortOpenList(SearchType.BFS)
                 # if list is empty, print "No Solution"
                 if not bool(self.openList):
                     self.printSolutionPath(SearchType.BFS)
@@ -299,10 +299,74 @@ class Puzzle:
                 else:
                     # pop next element on the list and visit
                     node=self.openList.popitem(last = False)[1]
-            
+    
+    def puzzleASTAR(self, node):
+        startTime = time.time()
+        while(node):
+            #increase cost of search
+            self.searchPathLength+=1
 
-    def sortOpenList(self):
-       self.openList =OrderedDict(sorted(self.openList.items(), key = lambda node: node[1].hn))
+            # verify is maximum search path length is not reached, if so exit
+            if self.searchPathLength >= self.maxLength:
+                self.printSolutionPath(SearchType.ASTAR)
+                self.printSearchPath(SearchType.ASTAR)
+                print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                node= None
+                endTime = time.time()
+                print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
+                print("Timed-out after reaching max search path of %s " % self.searchPathLength)
+                self.clearPuzzle()
+                break
+ 
+        
+            # test if the current node is the goal state
+            elif PuzzleUtil.GoalStateTest(node):
+                self.closedList[node.stateStr] = node
+                self.createSolutionPath(node)
+                self.printSolutionPath(SearchType.ASTAR)
+                self.printSearchPath(SearchType.ASTAR)
+                print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
+                node= None
+                endTime = time.time()
+                print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
+                self.clearPuzzle()
+                break
+
+            # the current node wasn't the goal state, so add it to the closed list,
+            # generate it's children and recursively search the open list
+            else:
+                # add node.state to the closed list
+                self.closedList[node.stateStr] = node
+
+                # generate the node's children
+                node.generateChildren()
+
+                # verify that children depth is less than max before adding to open list
+                for item in node.children:
+                    if (item.stateStr not in self.closedList) and (item.stateStr not in self.openList):
+                        self.openList[item.stateStr] = item
+            
+                # sort the open list in ascending order of h(n)
+                self.sortOpenList(SearchType.ASTAR)
+                # if list is empty, print "No Solution"
+                if not bool(self.openList):
+                    self.printSolutionPath(SearchType.ASTAR)
+                    self.printSearchPath(SearchType.ASTAR)
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                    node= None
+                    endTime = time.time()
+                    print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
+                    self.clearPuzzle()
+                    break
+                else:
+                    # pop next element on the list and visit
+                    node=self.openList.popitem(last = False)[1]
+
+    def sortOpenList(self,type):
+       if type == SearchType.BFS:
+            self.openList =OrderedDict(sorted(self.openList.items(), key = lambda node: node[1].hn))
+       elif type == SearchType.ASTAR:
+            self.openList =OrderedDict(sorted(self.openList.items(), key = lambda node: node[1].fn))
 
     def clearPuzzle(self):
         self.searchPathLength=0
@@ -327,7 +391,7 @@ class Puzzle:
             outputFileName = str(self.puzzleNumber) + "_dfs_solution.txt"
         elif type == SearchType.BFS:
             outputFileName = str(self.puzzleNumber) + "_bfs_solution.txt"
-        elif type == SearchType.BFS:
+        elif type == SearchType.ASTAR:
             outputFileName = str(self.puzzleNumber) + "_astar_solution.txt"
 
         file = open(outputFileName, 'w')
@@ -352,14 +416,23 @@ class Puzzle:
             outputFileName = str(self.puzzleNumber) + "_dfs_search.txt"
         elif type == SearchType.BFS:
             outputFileName = str(self.puzzleNumber) + "_bfs_search.txt"
-        elif type == SearchType.BFS:
+        elif type == SearchType.ASTAR:
             outputFileName = str(self.puzzleNumber) + "_astar_search.txt"
 
         file = open(outputFileName, 'w')
 
-        for key, value in self.closedList.items():
-            outputString = str(value.fn) + " " + str(value.gn) + " " + str(value.hn) + " " + str(key) + "\n"
-            file.write(outputString)
+        if type == SearchType.DFS:
+            for key, value in self.closedList.items():
+                outputString = str(0) + " " + str(0) + " " + str(0) + " " + str(key) + "\n"
+                file.write(outputString)
+        elif type == SearchType.BFS:
+            for key, value in self.closedList.items():
+                outputString = str(0) + " " + str(0) + " " + str(value.hn) + " " + str(key) + "\n"
+                file.write(outputString)
+        elif type == SearchType.ASTAR:
+            for key, value in self.closedList.items():
+                outputString = str(value.fn) + " " + str(value.gn) + " " + str(value.hn) + " " + str(key) + "\n"
+                file.write(outputString)
 
         file.close()
 
