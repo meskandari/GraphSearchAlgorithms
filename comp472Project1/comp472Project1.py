@@ -187,24 +187,24 @@ class Puzzle:
                 
                 # if stack is empty, print "No Solution"
                 if self.openList is None:
+                    endTime = time.time() 
                     self.printSolutionPath(SearchType.DFS)
                     self.printSearchPath(SearchType.DFS)
                     print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
-                    endTime = time.time()
                     print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
                     self.clearPuzzle()
                     break
         
             # test if the current node is the goal state
             elif PuzzleUtil.GoalStateTest(node):
+                endTime = time.time() 
                 self.closedList[node.stateStr] = node
                 self.createSolutionPath(node)
                 self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
                 print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
                 node= None
-                endTime = time.time()
                 print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
                 self.clearPuzzle()
                 break
@@ -226,11 +226,11 @@ class Puzzle:
 
                 # if stack is empty, print "No Solution"
                 if not bool(self.openList):
+                    endTime = time.time() 
                     self.printSolutionPath(SearchType.DFS)
                     self.printSearchPath(SearchType.DFS)
                     print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
-                    endTime = time.time()
                     print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
                     self.clearPuzzle()
                     break
@@ -246,11 +246,11 @@ class Puzzle:
 
             # verify is maximum search path length is not reached, if so exit
             if self.searchPathLength >= self.maxLength:
+                endTime = time.time() 
                 self.printSolutionPath(SearchType.BFS)
                 self.printSearchPath(SearchType.BFS)
                 print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                 node= None
-                endTime = time.time()
                 print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
                 print("Timed-out after reaching max search path of %s " % self.searchPathLength)
                 self.clearPuzzle()
@@ -259,13 +259,13 @@ class Puzzle:
         
             # test if the current node is the goal state
             elif PuzzleUtil.GoalStateTest(node):
+                endTime = time.time() 
                 self.closedList[node.stateStr] = node
                 self.createSolutionPath(node)
                 self.printSolutionPath(SearchType.BFS)
                 self.printSearchPath(SearchType.BFS)
                 print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
                 node= None
-                endTime = time.time()
                 print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
                 self.clearPuzzle()
                 break
@@ -288,11 +288,11 @@ class Puzzle:
                 self.sortOpenList(SearchType.BFS)
                 # if list is empty, print "No Solution"
                 if not bool(self.openList):
+                    endTime = time.time()                    
                     self.printSolutionPath(SearchType.BFS)
                     self.printSearchPath(SearchType.BFS)
                     print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
-                    endTime = time.time()
                     print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
                     self.clearPuzzle()
                     break
@@ -308,11 +308,11 @@ class Puzzle:
 
             # verify is maximum search path length is not reached, if so exit
             if self.searchPathLength >= self.maxLength:
+                endTime = time.time()
                 self.printSolutionPath(SearchType.ASTAR)
                 self.printSearchPath(SearchType.ASTAR)
                 print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                 node= None
-                endTime = time.time()
                 print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
                 print("Timed-out after reaching max search path of %s " % self.searchPathLength)
                 self.clearPuzzle()
@@ -321,13 +321,13 @@ class Puzzle:
         
             # test if the current node is the goal state
             elif PuzzleUtil.GoalStateTest(node):
+                endTime = time.time()
                 self.closedList[node.stateStr] = node
                 self.createSolutionPath(node)
                 self.printSolutionPath(SearchType.ASTAR)
                 self.printSearchPath(SearchType.ASTAR)
                 print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
                 node= None
-                endTime = time.time()
                 print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
                 self.clearPuzzle()
                 break
@@ -350,11 +350,11 @@ class Puzzle:
                 self.sortOpenList(SearchType.ASTAR)
                 # if list is empty, print "No Solution"
                 if not bool(self.openList):
+                    endTime = time.time()
                     self.printSolutionPath(SearchType.ASTAR)
                     self.printSearchPath(SearchType.ASTAR)
                     print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
-                    endTime = time.time()
                     print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
                     self.clearPuzzle()
                     break
