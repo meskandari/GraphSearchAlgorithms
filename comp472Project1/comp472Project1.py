@@ -343,8 +343,8 @@ class Puzzle:
 
                 # verify that children depth is less than max before adding to open list
                 for item in node.children:
-                    #TODO -- WRITE CODE TO UPDATE ENTRY OF STATE FOUND WITH BETTER F(N) IN CLOSED LIST AND IN OPEN LIST -- IF CODE BELOW IS NOT ADAPTED FOR ASTAR
-                    if (item.stateStr not in self.closedList) and (item.stateStr not in self.openList):
+                    #TODO -- ADD 'AND' CODE TO UPDATE ENTRY OF STATE FOUND WITH BETTER F(N) IN OPEN LIST
+                    if (item.stateStr not in self.closedList) :
                         self.openList[item.stateStr] = item
             
                 # sort the open list in ascending order of h(n)
