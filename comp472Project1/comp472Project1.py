@@ -29,8 +29,21 @@ class SearchType(Enum):
 # The Node class contains all the attributes and methods needed to manage a node in a search tree
 class Node:
 
+    #static dictionary that has the neighbors indexes per digit 
+    #<key,Value> == <digit , set Of neighbor's indexes digit included>
+    #should update only if the size of new puzzle is different
+    flippingIndexesByDigit = {}
+    staticSize = -1
     # constructor
     def __init__(self, parentNode, index, size, stateStr, stateBinary, depth, cost, label = "0", hn=0):
+        
+        # assign the dictionary key values
+        #we use this to copmare with set of 1's indexes in each node to calculate h(n)
+        if Node.staticSize!=size:
+             Node.staticSize=size
+             Node.flippingIndexesByDigit = PuzzleUtil.createDictOfFlipIndexes(size)
+             #print(Node.flippingIndexesByDigit)
+
         self.parent = parentNode
         self.index = index
         self.stateStr = stateStr
@@ -45,13 +58,14 @@ class Node:
         self.fn = self.hn + self.gn
 
            
-        if depth == -1:
+        if depth == 0:
             for i in range(len(self.stateBinary)):
                 self.stateBinary[i] = int(self.stateStr[i])
         else:
             self.stateBinary = stateBinary
 
-        self.evaluateNode()
+        #self.evaluateNode()
+        self.evaluateNode_m()
 
     # create the connected children of this node
     def generateChildren(self, searchType=0):
@@ -120,7 +134,31 @@ class Node:
             self.hn = min((distanceToGoal%3),(distanceToGoal%4),(distanceToGoal%5))
         else:
             self.hn = distanceToGoal
-        
+    
+            #BFS Heuristics_maryam 
+    def evaluateNode_m(self):  
+        indexesOfOnes = set()
+        for i in range(len(self.stateBinary)):
+            if self.stateBinary[i]==1:
+                indexesOfOnes.add(i)
+        #print(indexesOfOnes)
+        differenceSet=set()
+        for i in range(len(self.flippingIndexesByDigit)):
+            set1 = self.flippingIndexesByDigit.get(i)
+            if set1.issubset(indexesOfOnes):
+             indexesOfOnes-=set1
+            if len(indexesOfOnes)<3:
+                break
+        #compute distance between remaining indexes of ones 
+        #try to evaluate if the ones near each other or not
+        if(len(indexesOfOnes)!=0)&(len(indexesOfOnes)< 4 ):
+            sortedList = sorted(indexesOfOnes)
+            self.hn=sortedList[len(sortedList)-1]-sortedList[0]
+        self.hn+= len(indexesOfOnes)
+        self.fn = self.hn + self.gn
+        indexesOfOnes.clear()
+       #print(differenceSet)
+
             
 # A class containing useful utility methods
 class PuzzleUtil:
@@ -152,6 +190,45 @@ class PuzzleUtil:
     @staticmethod
     def stringToDecimal(stateStr):
         return int(stateStr, 2)
+    
+    #return the idexes of given digit as a set
+    @staticmethod
+    def getNeighboursIndexOfGivenDigit(size, digit):
+        validIndices = set()
+        lastDigitIndex = size*size
+        
+
+        # populate the valid Indices list with this cell's index and it's immediate neighbours' indices
+        if -1 < digit < (lastDigitIndex+1):
+            validIndices.add(digit)
+
+            # top neighbours
+            if (digit - size) >= 0:
+                validIndices.add(digit - size)
+
+            # left neighbours
+            if (digit % size) != 0:
+                validIndices.add(digit-1)
+
+            # bottom neighbour
+            if (digit + size) < (lastDigitIndex+1):
+                validIndices.add(digit + size)
+
+            # right neighbours
+            if ((digit + 1) % size) != 0:
+                validIndices.add(digit+1)
+
+        return validIndices
+
+    @staticmethod
+    def createDictOfFlipIndexes(size):
+        flippingIndexes = set()
+        flippingIndexesByDigit = {}
+
+        for i in range (size * size):
+            flippingIndexes= PuzzleUtil.getNeighboursIndexOfGivenDigit(size , i)
+            flippingIndexesByDigit[i] = flippingIndexes
+        return flippingIndexesByDigit
 
 # The puzzle class represents a particular puzzle configuration
 # the root node is the puzzle's initial state
@@ -161,13 +238,14 @@ class Puzzle:
     # static data member that keeps track of puzzle number
     puzzleNumber = -1
 
+
     def __init__(self, data):
         Puzzle.puzzleNumber += 1
         self.size = int(data[0])
         self.maxDepth = int(data[1])
         self.maxLength = int(data[2])
         self.stateString = data[3]
-        self.root = Node(None, 0, self.size, self.stateString, None, -1, 0)
+        self.root = Node(None, 0, self.size, self.stateString, None, 0, 0)
         self.searchPathLength = 0
 
         # initialize closed list and open list
@@ -176,6 +254,8 @@ class Puzzle:
 
         # create empty solution path arrays, they will be filled backwards once the solution path is found
         self.solutionPath = list()
+
+       
     
     # recursively solve the puzzle using depth first search
     def puzzleDFS(self, node):
@@ -344,8 +424,9 @@ class Puzzle:
                 # verify that children depth is less than max before adding to open list
                 for item in node.children:
                     #TODO -- ADD 'AND' CODE TO UPDATE ENTRY OF STATE FOUND WITH BETTER F(N) IN OPEN LIST
+                    # no need to add additional condition since the line 428 does the same job
                     if (item.stateStr not in self.closedList) :
-                        self.openList[item.stateStr] = item
+                        self.openList[item.stateStr] = item # this line updates the value if the key exists otherwise it add as new <key,value>
             
                 # sort the open list in ascending order of h(n)
                 self.sortOpenList(SearchType.ASTAR)
@@ -442,8 +523,8 @@ class Puzzle:
 # MAIN
 
 # read the filename from the first command line argument
-fileName = sys.argv[1]
-#fileName = "test1.txt"
+#fileName = sys.argv[1]
+fileName = "test.txt"
 puzzleData = list()
 
 # read the puzzle data into a list
@@ -456,6 +537,7 @@ for data in puzzleData:
     data = data.split()
     p = Puzzle(data)
     #print(data)
-    p.puzzleDFS(p.root)
+    #p.puzzleDFS(p.root)
     p.puzzleBFS(p.root)
+    p.puzzleASTAR(p.root)
 
