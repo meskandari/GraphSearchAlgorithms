@@ -65,7 +65,7 @@ class Node:
             self.stateBinary = stateBinary
 
         #self.evaluateNode()
-        self.evaluateNode_m()
+        self.evaluateNode_j()
 
     # create the connected children of this node
     def generateChildren(self, searchType=0):
@@ -135,7 +135,7 @@ class Node:
         else:
             self.hn = distanceToGoal
     
-            #BFS Heuristics_maryam 
+    #BFS Heuristics_maryam 
     def evaluateNode_m(self):  
         indexesOfOnes = set()
         for i in range(len(self.stateBinary)):
@@ -158,6 +158,18 @@ class Node:
         self.fn = self.hn + self.gn
         indexesOfOnes.clear()
        #print(differenceSet)
+
+    #BFS Heuristics_jason
+    def evaluateNode_j(self):
+        if(self.parent):
+            neighbors = len(self.getNeighbours(self.index))
+            binCountParent = np.bincount(self.parent.stateBinary)
+            binCountSelf = np.bincount(self.stateBinary)
+            if(binCountSelf[0] == len(self.stateBinary)):
+                self.hn = 0
+            else:
+                self.hn = abs((float)(binCountParent[1] - binCountSelf[1])) / neighbors + binCountSelf[1]
+            self.fn = self.gn + self.hn
 
             
 # A class containing useful utility methods
@@ -329,10 +341,10 @@ class Puzzle:
                 endTime = time.time() 
                 self.printSolutionPath(SearchType.BFS)
                 self.printSearchPath(SearchType.BFS)
-                print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                print("Puzzle #" + str(self.puzzleNumber) + " no solution! Timed-Out - BFS - %g seconds" % (endTime - startTime))
                 node= None
-                print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
-                print("Timed-out after reaching max search path of %s " % self.searchPathLength)
+                #print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
+                #print("Timed-out after reaching max search path of %s " % self.searchPathLength)
                 self.clearPuzzle()
                 break
  
@@ -344,9 +356,9 @@ class Puzzle:
                 self.createSolutionPath(node)
                 self.printSolutionPath(SearchType.BFS)
                 self.printSearchPath(SearchType.BFS)
-                print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
+                print("Puzzle #" + str(self.puzzleNumber) + " solution found! BFS - %g seconds" % (endTime - startTime))
                 node= None
-                print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
+                #print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
                 self.clearPuzzle()
                 break
 
@@ -371,9 +383,9 @@ class Puzzle:
                     endTime = time.time()                    
                     self.printSolutionPath(SearchType.BFS)
                     self.printSearchPath(SearchType.BFS)
-                    print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution! BFS - %g seconds" % (endTime - startTime))
                     node= None
-                    print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
+                    #print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
                     self.clearPuzzle()
                     break
                 else:
@@ -391,10 +403,10 @@ class Puzzle:
                 endTime = time.time()
                 self.printSolutionPath(SearchType.ASTAR)
                 self.printSearchPath(SearchType.ASTAR)
-                print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                print("Puzzle #" + str(self.puzzleNumber) + " no solution! Timed-out - A* - %g seconds" % (endTime - startTime))
                 node= None
-                print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
-                print("Timed-out after reaching max search path of %s " % self.searchPathLength)
+                #print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
+                #print("Timed-out after reaching max search path of %s " % self.searchPathLength)
                 self.clearPuzzle()
                 break
  
@@ -406,9 +418,9 @@ class Puzzle:
                 self.createSolutionPath(node)
                 self.printSolutionPath(SearchType.ASTAR)
                 self.printSearchPath(SearchType.ASTAR)
-                print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
+                print("Puzzle #" + str(self.puzzleNumber) + " solution found! A* - %g seconds" % (endTime - startTime))
                 node= None
-                print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
+                #print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
                 self.clearPuzzle()
                 break
 
@@ -435,9 +447,9 @@ class Puzzle:
                     endTime = time.time()
                     self.printSolutionPath(SearchType.ASTAR)
                     self.printSearchPath(SearchType.ASTAR)
-                    print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution! A* - %g seconds" % (endTime - startTime))
                     node= None
-                    print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
+                    #print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
                     self.clearPuzzle()
                     break
                 else:
@@ -446,11 +458,12 @@ class Puzzle:
 
     def sortOpenList(self,type):
        if type == SearchType.BFS:
-            self.openList =OrderedDict(sorted(self.openList.items(), key = lambda node: node[1].hn))
+            self.openList = OrderedDict(sorted(self.openList.items(), key = lambda node: node[1].hn))
        elif type == SearchType.ASTAR:
             self.openList =OrderedDict(sorted(self.openList.items(), key = lambda node: node[1].fn))
 
     def clearPuzzle(self):
+        self.root = Node(None, 0, self.size, self.stateString, None, 0, 0)
         self.searchPathLength=0
         self.closedList.clear()
         self.openList.clear()
