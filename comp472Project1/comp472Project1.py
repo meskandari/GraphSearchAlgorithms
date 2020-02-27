@@ -301,9 +301,10 @@ class Puzzle:
                     endTime = time.time() 
                     self.printSolutionPath(SearchType.DFS)
                     self.printSearchPath(SearchType.DFS)
-                    print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                    self.printToReport(SearchType.DFS, "timeout", endTime - startTime)
+                    #print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
-                    print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
+                    #print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
                     self.clearPuzzle()
                     break
         
@@ -314,9 +315,10 @@ class Puzzle:
                 self.createSolutionPath(node)
                 self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
-                print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
+                self.printToReport(SearchType.DFS, "solved", endTime - startTime)
+                #print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
                 node= None
-                print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
+                #print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
                 self.clearPuzzle()
                 break
 
@@ -340,9 +342,10 @@ class Puzzle:
                     endTime = time.time() 
                     self.printSolutionPath(SearchType.DFS)
                     self.printSearchPath(SearchType.DFS)
-                    print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                    self.printToReport(SearchType.DFS, "timeout", endTime - startTime)
+                    #print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
                     node= None
-                    print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
+                    #print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
                     self.clearPuzzle()
                     break
                 else:
@@ -571,13 +574,14 @@ class Puzzle:
         elif type == SearchType.ASTAR:
             outputFileName = str(self.puzzleNumber) + "_astar_performance.txt"
 
-        htype = ""
-        if self.heuristic == HeuristicType.MARTIN:
-            hType = "martin"
-        elif self.heuristic == HeuristicType.MARYAM:
-            hType = "maryam"
-        else:
-            hType = "jason"
+        hType = "None"
+        if type != SearchType.DFS:
+            if self.heuristic == HeuristicType.MARTIN:
+                hType = "martin"
+            elif self.heuristic == HeuristicType.MARYAM:
+                hType = "maryam"
+            else:
+                hType = "jason"
 
         file = open(outputFileName, 'a')
         file.write(str(self.puzzleNumber) + ", " + hType + ", "+ status + ", " + str(time) + "\n")
@@ -599,12 +603,12 @@ with open(str(fileName)) as file:
 # then use depth first search to solve each puzzle
 heuristic = HeuristicType.MARTIN
 for i in range(0, 3):
-    for j in range(10):
+    for j in range(20):
         for data in puzzleData:
             data = data.split()
             p = Puzzle(data, heuristic)
             #print(data)
-            #p.puzzleDFS(p.root)
+            p.puzzleDFS(p.root)
             p.puzzleBFS(p.root)
             p.puzzleASTAR(p.root)
     if heuristic == HeuristicType.MARTIN:
