@@ -162,13 +162,19 @@ class Node:
     #BFS Heuristics_jason
     def evaluateNode_j(self):
         if(self.parent):
-            neighbors = len(self.getNeighbours(self.index))
+            neighbors = self.getNeighbours(self.index)
+            cost = 1 # base cost for moving down 1 depth
+            for i in range(len(neighbors)):
+                if self.stateBinary[i] == 1:
+                    cost += 1
+            self.gn = self.parent.gn + cost
+
             binCountParent = np.bincount(self.parent.stateBinary)
             binCountSelf = np.bincount(self.stateBinary)
             if(binCountSelf[0] == len(self.stateBinary)):
                 self.hn = 0
             else:
-                self.hn = abs((float)(binCountParent[1] - binCountSelf[1])) / neighbors + binCountSelf[1]
+                self.hn = abs((float)(binCountParent[1] - binCountSelf[1])) / len(neighbors) + binCountSelf[1]
             self.fn = self.gn + self.hn
 
             
@@ -438,8 +444,15 @@ class Puzzle:
                     #TODO -- ADD 'AND' CODE TO UPDATE ENTRY OF STATE FOUND WITH BETTER F(N) IN OPEN LIST
                     # no need to add additional condition since the line 428 does the same job
                     if (item.stateStr not in self.closedList) :
-                        self.openList[item.stateStr] = item # this line updates the value if the key exists otherwise it add as new <key,value>
-            
+                        if(item.stateStr in self.openList):
+                            if(item.fn < self.openList[item.stateStr].fn):
+                                self.openList[item.stateStr] = item # this line updates the value if the key exists otherwise it add as new <key,value>
+                        else:
+                            self.openList[item.stateStr] = item
+                    #else:
+                    #    if item.fn < self.closedList[item.stateStr].fn:
+                    #        self.closedList[item.stateStr] = item
+
                 # sort the open list in ascending order of h(n)
                 self.sortOpenList(SearchType.ASTAR)
                 # if list is empty, print "No Solution"
