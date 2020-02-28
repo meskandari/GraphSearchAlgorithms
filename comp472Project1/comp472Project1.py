@@ -164,8 +164,8 @@ class Node:
         if(len(indexesOfOnes)!=0)&(len(indexesOfOnes)< 4 ):
             sortedList = sorted(indexesOfOnes)
             self.hn=sortedList[len(sortedList)-1]-sortedList[0]
-        self.hn+= len(indexesOfOnes)
-        self.fn = self.hn + self.gn
+        self.hn+= len(indexesOfOnes) +1 #avoid generate to h(n) as zeros
+        self.fn = self.hn + self.gn 
         indexesOfOnes.clear()
        #print(differenceSet)
 
