@@ -161,13 +161,15 @@ class Node:
                 break
         #compute distance between remaining indexes of ones 
         #try to evaluate if the ones near each other or not
-        if(len(indexesOfOnes)!=0)&(len(indexesOfOnes)< 4 ):
+        if(len(indexesOfOnes)!=0)&(len(indexesOfOnes)< 5):
             sortedList = sorted(indexesOfOnes)
             self.hn=sortedList[len(sortedList)-1]-sortedList[0]
         self.hn+= len(indexesOfOnes) +1 #avoid generate to h(n) as zeros
         self.fn = self.hn + self.gn 
+        self.hn+= len(indexesOfOnes)+1
+        self.fn = self.hn + self.gn
         indexesOfOnes.clear()
-       #print(differenceSet)
+        #print(differenceSet)
 
     #BFS Heuristics_jason
     def evaluateNode_j(self):
@@ -601,7 +603,7 @@ with open(str(fileName)) as file:
 
 # split the data by whitespace, and create a Puzzle object for each one,
 # then use depth first search to solve each puzzle
-heuristic = HeuristicType.MARTIN
+heuristic = HeuristicType.MARYAM
 for i in range(0, 3):
     for j in range(20):
         for data in puzzleData:
@@ -611,8 +613,8 @@ for i in range(0, 3):
             p.puzzleDFS(p.root)
             p.puzzleBFS(p.root)
             p.puzzleASTAR(p.root)
-    if heuristic == HeuristicType.MARTIN:
-        heuristic = HeuristicType.MARYAM
+    if heuristic == heuristictype.martin:
+        heuristic = heuristictype.maryam
     else:
-        heuristic = HeuristicType.JASON
+        heuristic = heuristictype.jason
 
