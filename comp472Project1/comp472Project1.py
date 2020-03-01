@@ -1,11 +1,18 @@
+# March 1 2020
+# Concordia University
+# COMP 472 Section NN
+# Project 1
+# By:
+# Jason Brennan - 27793928
+# Maryam Eskandari - 40065716
+# Martin Grezak - 25693810
+
 import sys
 import numpy as np
 from operator import itemgetter, attrgetter
 from collections import OrderedDict
 from enum import Enum
 import time
-
-
 
 # An enum class for labelling cells in the puzzle matrix
 class RowLabel(Enum):
@@ -26,28 +33,27 @@ class SearchType(Enum):
     BFS = 2
     ASTAR = 3
 
+# An enum class for flagging the type of heuristic to use
 class HeuristicType(Enum):
-    MARTIN = 1
-    MARYAM = 2
-    JASON = 3
+    ONE = 1
+    TWO = 2
+    THREE = 3
 
 # The Node class contains all the attributes and methods needed to manage a node in a search tree
 class Node:
-
-    #static dictionary that has the neighbors indexes per digit 
-    #<key,Value> == <digit , set Of neighbor's indexes digit included>
-    #should update only if the size of new puzzle is different
+    # static dictionary that has the neighbors indexes per digit 
+    # <key,Value> == <digit , set Of neighbor's indexes digit included>
+    # should update only if the size of new puzzle is different
     flippingIndexesByDigit = {}
     staticSize = -1
+
     # constructor
     def __init__(self, parentNode, index, size, stateStr, stateBinary, depth, cost, heuristic, label = "0", hn=0):
-        
         # assign the dictionary key values
-        #we use this to copmare with set of 1's indexes in each node to calculate h(n)
-        if Node.staticSize!=size:
-             Node.staticSize=size
+        # we use this to copmare with set of 1's indexes in each node to calculate h(n)
+        if Node.staticSize != size:
+             Node.staticSize = size
              Node.flippingIndexesByDigit = PuzzleUtil.createDictOfFlipIndexes(size)
-             #print(Node.flippingIndexesByDigit)
 
         self.parent = parentNode
         self.index = index
@@ -62,7 +68,6 @@ class Node:
         self.hn = hn
         self.fn = self.hn + self.gn
         self.heuristic = heuristic
-
            
         if depth == 0:
             for i in range(len(self.stateBinary)):
@@ -70,9 +75,9 @@ class Node:
         else:
             self.stateBinary = stateBinary
         
-        if heuristic == HeuristicType.MARTIN:
+        if heuristic == HeuristicType.ONE:
             self.evaluateNode()
-        elif heuristic == HeuristicType.MARYAM:
+        elif heuristic == HeuristicType.TWO:
             self.evaluateNode_m()
         else:
             self.evaluateNode_j()
@@ -94,7 +99,7 @@ class Node:
             n = Node(self, i, self.offset, stateString , arr, self.depth + 1, self.cost + 1, self.heuristic, PuzzleUtil.generateNodeLabel(row, col))
             self.children.append(n)
         
-        if (searchType==SearchType.DFS):
+        if  searchType == SearchType.DFS:
             # sort the children in reverse order
             self.children = sorted(self.children , key = attrgetter('stateStr'), reverse = True)
     
@@ -104,9 +109,7 @@ class Node:
         
         # get the indices of the immediate neighbours of this cell, change the appropriate indices to 1
         indicesToChange = self.getNeighbours(digit)
-        #test = self.stateBinary[:]
         for i in indicesToChange:
-            #test[i]=1-test[i]
             binaryPattern[i] = 1
        
         return np.bitwise_xor(binaryPattern, self.stateBinary)
@@ -136,64 +139,59 @@ class Node:
 
         return validIndices
 
-    #BFS Heuristics
+    # Heuristic 1
     def evaluateNode(self):  
-        #print(self.stateBinary)
         distanceToGoal = np.count_nonzero(self.stateBinary == 1)
         if distanceToGoal<6:
             self.hn = min((distanceToGoal%3),(distanceToGoal%4),(distanceToGoal%5))
         else:
             self.hn = distanceToGoal
     
-    #BFS Heuristics_maryam 
+    # Heuristic 2 
     def evaluateNode_m(self):  
         indexesOfOnes = set()
         for i in range(len(self.stateBinary)):
-            if self.stateBinary[i]==1:
+            if self.stateBinary[i] == 1:
                 indexesOfOnes.add(i)
-        #print(indexesOfOnes)
-        differenceSet=set()
+
+        differenceSet = set()
         for i in range(len(self.flippingIndexesByDigit)):
             set1 = self.flippingIndexesByDigit.get(i)
             if set1.issubset(indexesOfOnes):
              indexesOfOnes-=set1
-            if len(indexesOfOnes)<3:
+            if len(indexesOfOnes) < 3:
                 break
-        #compute distance between remaining indexes of ones 
-        #try to evaluate if the ones near each other or not
-        if(len(indexesOfOnes)!=0)&(len(indexesOfOnes)< 5):
+
+        # compute distance between remaining indexes of ones 
+        # try to evaluate if the ones are near each other or not
+        if (len(indexesOfOnes) != 0) & (len(indexesOfOnes) < 5):
             sortedList = sorted(indexesOfOnes)
             self.hn=sortedList[len(sortedList)-1]-sortedList[0]
-        self.hn+= len(indexesOfOnes) +1 #avoid generate to h(n) as zeros
-        self.fn = self.hn + self.gn 
-        self.hn+= len(indexesOfOnes)+1
-        self.fn = self.hn + self.gn
-        indexesOfOnes.clear()
-        #print(differenceSet)
 
-    #BFS Heuristics_jason
+        # avoid generate to h(n) as zeros
+        self.hn += len(indexesOfOnes) + 1
+        self.fn = self.hn + self.gn 
+        self.hn += len(indexesOfOnes) + 1
+        self.fn = self.hn + self.gn
+
+        indexesOfOnes.clear()
+
+    # Heuristic 3
     def evaluateNode_j(self):
         if(self.parent):
             neighbors = self.getNeighbours(self.index)
-            #cost = 1 # base cost for moving down 1 depth
-            #for i in range(len(neighbors)):
-            #    if self.stateBinary[i] == 1:
-            #        cost += 1
-            #self.gn = self.parent.gn + cost
-
             binCountParent = np.bincount(self.parent.stateBinary)
             binCountSelf = np.bincount(self.stateBinary)
-            if(binCountSelf[0] == len(self.stateBinary)):
+
+            if binCountSelf[0] == len(self.stateBinary):
                 self.hn = 0
             else:
-                #self.hn = abs((float)(binCountParent[1] - binCountSelf[1])) / len(neighbors) + binCountSelf[1]
                 self.hn = binCountSelf[1] / len(neighbors)
-            self.fn = self.gn + self.hn
 
+            self.fn = self.gn + self.hn
             
 # A class containing useful utility methods
 class PuzzleUtil:
-
     def __init__(self):
         pass
 
@@ -257,7 +255,7 @@ class PuzzleUtil:
         flippingIndexesByDigit = {}
 
         for i in range (size * size):
-            flippingIndexes= PuzzleUtil.getNeighboursIndexOfGivenDigit(size , i)
+            flippingIndexes = PuzzleUtil.getNeighboursIndexOfGivenDigit(size , i)
             flippingIndexesByDigit[i] = flippingIndexes
         return flippingIndexesByDigit
 
@@ -268,7 +266,6 @@ class PuzzleUtil:
 class Puzzle:
     # static data member that keeps track of puzzle number
     puzzleNumber = -1
-
 
     def __init__(self, data, heuristic):
         Puzzle.puzzleNumber += 1
@@ -289,9 +286,7 @@ class Puzzle:
         # create empty solution path arrays, they will be filled backwards once the solution path is found
         self.solutionPath = list()
 
-       
-    
-    # recursively solve the puzzle using depth first search
+    # iterate and solve the puzzle using depth first search
     def puzzleDFS(self, node):
         startTime = time.time()
         while(node):
@@ -305,9 +300,8 @@ class Puzzle:
                     self.printSolutionPath(SearchType.DFS)
                     self.printSearchPath(SearchType.DFS)
                     self.printToReport(SearchType.DFS, "timeout", endTime - startTime)
-                    #print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution! Timed-Out - DFS - %g seconds" % (endTime - startTime))
                     node= None
-                    #print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
                     self.clearPuzzle()
                     break
         
@@ -319,9 +313,8 @@ class Puzzle:
                 self.printSolutionPath(SearchType.DFS)
                 self.printSearchPath(SearchType.DFS)
                 self.printToReport(SearchType.DFS, "solved", endTime - startTime)
-                #print("Puzzle #" + str(self.puzzleNumber) + " solution found!")
-                node= None
-                #print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
+                print("Puzzle #" + str(self.puzzleNumber) + " solution found! DFS - %g seconds" % (endTime - startTime))
+                node = None
                 self.clearPuzzle()
                 break
 
@@ -338,7 +331,6 @@ class Puzzle:
                 for item in node.children:
                     if (item.depth < self.maxDepth) and (item.stateStr not in self.closedList) and (item.stateStr not in self.openList):
                         self.openList[item.stateStr] = item
-            
 
                 # if stack is empty, print "No Solution"
                 if not bool(self.openList):
@@ -346,20 +338,20 @@ class Puzzle:
                     self.printSolutionPath(SearchType.DFS)
                     self.printSearchPath(SearchType.DFS)
                     self.printToReport(SearchType.DFS, "timeout", endTime - startTime)
-                    #print("Puzzle #" + str(self.puzzleNumber) + " no solution!")
-                    node= None
-                    #print("This conclusion was reached in %g seconds via DFS" % (endTime - startTime))
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution! Timed-Out - DFS - %g seconds" % (endTime - startTime))
+                    node = None
                     self.clearPuzzle()
                     break
                 else:
                     # pop next element on the Stack and visit
-                    node=self.openList.popitem(last = True)[1]
+                    node = self.openList.popitem(last = True)[1]
 
+    # iterate and solve the puzzle using best first search
     def puzzleBFS(self, node):
         startTime = time.time()
         while(node):
             #increase cost of search
-            self.searchPathLength+=1
+            self.searchPathLength += 1
 
             # verify is maximum search path length is not reached, if so exit
             if self.searchPathLength >= self.maxLength:
@@ -367,14 +359,11 @@ class Puzzle:
                 self.printSolutionPath(SearchType.BFS)
                 self.printSearchPath(SearchType.BFS)
                 self.printToReport(SearchType.BFS, "timeout", endTime - startTime)
-                #print("Puzzle #" + str(self.puzzleNumber) + " no solution! Timed-Out - BFS - %g seconds" % (endTime - startTime))
-                node= None
-                #print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
-                #print("Timed-out after reaching max search path of %s " % self.searchPathLength)
+                print("Puzzle #" + str(self.puzzleNumber) + " no solution! Timed-Out - BFS - %g seconds" % (endTime - startTime))
+                node = None
                 self.clearPuzzle()
                 break
- 
-        
+
             # test if the current node is the goal state
             elif PuzzleUtil.GoalStateTest(node):
                 endTime = time.time() 
@@ -383,9 +372,8 @@ class Puzzle:
                 self.printSolutionPath(SearchType.BFS)
                 self.printSearchPath(SearchType.BFS)
                 self.printToReport(SearchType.BFS, "solved", endTime - startTime)
-                #print("Puzzle #" + str(self.puzzleNumber) + " solution found! BFS - %g seconds" % (endTime - startTime))
-                node= None
-                #print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
+                print("Puzzle #" + str(self.puzzleNumber) + " solution found! BFS - %g seconds" % (endTime - startTime))
+                node = None
                 self.clearPuzzle()
                 break
 
@@ -411,20 +399,19 @@ class Puzzle:
                     self.printSolutionPath(SearchType.BFS)
                     self.printSearchPath(SearchType.BFS)
                     self.printToReport(SearchType.BFS, "timeout", endTime - startTime)
-                    #print("Puzzle #" + str(self.puzzleNumber) + " no solution! BFS - %g seconds" % (endTime - startTime))
-                    node= None
-                    #print("This conclusion was reached in %g seconds using BFS" % (endTime - startTime))
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution! BFS - %g seconds" % (endTime - startTime))
+                    node = None
                     self.clearPuzzle()
                     break
                 else:
                     # pop next element on the list and visit
-                    node=self.openList.popitem(last = False)[1]
+                    node = self.openList.popitem(last = False)[1]
     
     def puzzleASTAR(self, node):
         startTime = time.time()
         while(node):
             #increase cost of search
-            self.searchPathLength+=1
+            self.searchPathLength += 1
 
             # verify is maximum search path length is not reached, if so exit
             if self.searchPathLength >= self.maxLength:
@@ -432,14 +419,11 @@ class Puzzle:
                 self.printSolutionPath(SearchType.ASTAR)
                 self.printSearchPath(SearchType.ASTAR)
                 self.printToReport(SearchType.ASTAR, "timeout", endTime - startTime)
-                #print("Puzzle #" + str(self.puzzleNumber) + " no solution! Timed-out - A* - %g seconds" % (endTime - startTime))
-                node= None
-                #print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
-                #print("Timed-out after reaching max search path of %s " % self.searchPathLength)
+                print("Puzzle #" + str(self.puzzleNumber) + " no solution! Timed-out - A* - %g seconds" % (endTime - startTime))
+                node = None
                 self.clearPuzzle()
                 break
- 
-        
+
             # test if the current node is the goal state
             elif PuzzleUtil.GoalStateTest(node):
                 endTime = time.time()
@@ -448,9 +432,8 @@ class Puzzle:
                 self.printSolutionPath(SearchType.ASTAR)
                 self.printSearchPath(SearchType.ASTAR)
                 self.printToReport(SearchType.ASTAR, "solved", endTime - startTime)
-                #print("Puzzle #" + str(self.puzzleNumber) + " solution found! A* - %g seconds" % (endTime - startTime))
-                node= None
-                #print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
+                print("Puzzle #" + str(self.puzzleNumber) + " solution found! A* - %g seconds" % (endTime - startTime))
+                node = None
                 self.clearPuzzle()
                 break
 
@@ -465,29 +448,25 @@ class Puzzle:
 
                 # verify that children depth is less than max before adding to open list
                 for item in node.children:
-                    #TODO -- ADD 'AND' CODE TO UPDATE ENTRY OF STATE FOUND WITH BETTER F(N) IN OPEN LIST
-                    # no need to add additional condition since the line 428 does the same job
-                    if (item.stateStr not in self.closedList) :
-                        if(item.stateStr in self.openList):
-                            if(item.fn < self.openList[item.stateStr].fn):
-                                self.openList[item.stateStr] = item # this line updates the value if the key exists otherwise it add as new <key,value>
+                    if item.stateStr not in self.closedList:
+                        if item.stateStr in self.openList:
+                            if item.fn < self.openList[item.stateStr].fn:
+                                # update the value if the key exists otherwise it add as new <key,value>
+                                self.openList[item.stateStr] = item
                         else:
                             self.openList[item.stateStr] = item
-                    #else:
-                    #    if item.fn < self.closedList[item.stateStr].fn:
-                    #        self.closedList[item.stateStr] = item
 
                 # sort the open list in ascending order of h(n)
                 self.sortOpenList(SearchType.ASTAR)
+
                 # if list is empty, print "No Solution"
                 if not bool(self.openList):
                     endTime = time.time()
                     self.printSolutionPath(SearchType.ASTAR)
                     self.printSearchPath(SearchType.ASTAR)
                     self.printToReport(SearchType.ASTAR, "timeout", endTime - startTime)
-                    #print("Puzzle #" + str(self.puzzleNumber) + " no solution! A* - %g seconds" % (endTime - startTime))
-                    node= None
-                    #print("This conclusion was reached in %g seconds using A*" % (endTime - startTime))
+                    print("Puzzle #" + str(self.puzzleNumber) + " no solution! A* - %g seconds" % (endTime - startTime))
+                    node = None
                     self.clearPuzzle()
                     break
                 else:
@@ -537,6 +516,7 @@ class Puzzle:
                     outputString += self.solutionPath[i].stateStr[j] + " "
                 outputString += "\n"
                 file.write(outputString)
+
         # otherwise there is no solution
         else:
             file.write("No solution")
@@ -569,6 +549,7 @@ class Puzzle:
 
         file.close()
 
+    # output the performance results to a file named after the give search algorithm
     def printToReport(self, type, status, time):
         if type == SearchType.DFS:
             outputFileName = str(self.puzzleNumber) + "_dfs_performance.txt"
@@ -579,22 +560,19 @@ class Puzzle:
 
         hType = "None"
         if type != SearchType.DFS:
-            if self.heuristic == HeuristicType.MARTIN:
-                hType = "martin"
-            elif self.heuristic == HeuristicType.MARYAM:
-                hType = "maryam"
+            if self.heuristic == HeuristicType.ONE:
+                hType = "H1"
+            elif self.heuristic == HeuristicType.TWO:
+                hType = "H2"
             else:
-                hType = "jason"
+                hType = "H3"
 
         file = open(outputFileName, 'a')
-        file.write(str(self.puzzleNumber) + ", " + hType + ", "+ status + ", " + str(time) + "\n")
+        file.write(str(self.puzzleNumber) + ", " + hType + ", " + status + ", " + str(time) + "\n")
+
         file.close()
-        
 
 # MAIN
-
-# read the filename from the first command line argument
-#fileName = sys.argv[1]
 fileName = "test.txt"
 puzzleData = list()
 
@@ -603,26 +581,11 @@ with open(str(fileName)) as file:
     puzzleData = file.readlines()
 
 # split the data by whitespace, and create a Puzzle object for each one,
-# then use depth first search to solve each puzzle
-heuristic = HeuristicType.MARYAM
-for i in range(0, 3):
-    for j in range(5):
-        for data in puzzleData:
-            data = data.split()
-            p = Puzzle(data, heuristic)
-            #print(data)
-            p.puzzleDFS(p.root)
-            p.puzzleBFS(p.root)
-            p.puzzleASTAR(p.root)
-    if heuristic == heuristictype.martin:
-        heuristic = heuristictype.maryam
-    else:
-        heuristic = heuristictype.jason
-
-#for data in puzzleData:
-#    data = data.split()
-#    p = Puzzle(data, heuristic)
-#    #print(data)
-#    p.puzzleDFS(p.root)
-#    p.puzzleBFS(p.root)
-#    p.puzzleASTAR(p.root)
+# then solve each puzzle using DFS, BFS, A* and heuristic 3
+heuristic = HeuristicType.THREE
+for data in puzzleData:
+    data = data.split()
+    p = Puzzle(data, heuristic)
+    p.puzzleDFS(p.root)
+    p.puzzleBFS(p.root)
+    p.puzzleASTAR(p.root)
