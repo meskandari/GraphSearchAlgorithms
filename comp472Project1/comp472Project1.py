@@ -175,18 +175,19 @@ class Node:
     def evaluateNode_j(self):
         if(self.parent):
             neighbors = self.getNeighbours(self.index)
-            cost = 1 # base cost for moving down 1 depth
-            for i in range(len(neighbors)):
-                if self.stateBinary[i] == 1:
-                    cost += 1
-            self.gn = self.parent.gn + cost
+            #cost = 1 # base cost for moving down 1 depth
+            #for i in range(len(neighbors)):
+            #    if self.stateBinary[i] == 1:
+            #        cost += 1
+            #self.gn = self.parent.gn + cost
 
             binCountParent = np.bincount(self.parent.stateBinary)
             binCountSelf = np.bincount(self.stateBinary)
             if(binCountSelf[0] == len(self.stateBinary)):
                 self.hn = 0
             else:
-                self.hn = abs((float)(binCountParent[1] - binCountSelf[1])) / len(neighbors) + binCountSelf[1]
+                #self.hn = abs((float)(binCountParent[1] - binCountSelf[1])) / len(neighbors) + binCountSelf[1]
+                self.hn = binCountSelf[1] / len(neighbors)
             self.fn = self.gn + self.hn
 
             
@@ -605,7 +606,7 @@ with open(str(fileName)) as file:
 # then use depth first search to solve each puzzle
 heuristic = HeuristicType.MARYAM
 for i in range(0, 3):
-    for j in range(20):
+    for j in range(5):
         for data in puzzleData:
             data = data.split()
             p = Puzzle(data, heuristic)
@@ -618,3 +619,10 @@ for i in range(0, 3):
     else:
         heuristic = heuristictype.jason
 
+#for data in puzzleData:
+#    data = data.split()
+#    p = Puzzle(data, heuristic)
+#    #print(data)
+#    p.puzzleDFS(p.root)
+#    p.puzzleBFS(p.root)
+#    p.puzzleASTAR(p.root)
