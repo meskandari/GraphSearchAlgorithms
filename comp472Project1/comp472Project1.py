@@ -406,7 +406,8 @@ class Puzzle:
                 else:
                     # pop next element on the list and visit
                     node = self.openList.popitem(last = False)[1]
-    
+
+    # iterate and solve the puzzle using A*
     def puzzleASTAR(self, node):
         startTime = time.time()
         while(node):
