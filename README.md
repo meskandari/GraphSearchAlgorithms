@@ -1,4 +1,3 @@
-https://github.com/zee366/comp472Project1
 
 Instructions:
 
