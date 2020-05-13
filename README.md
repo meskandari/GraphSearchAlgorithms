@@ -1,4 +1,4 @@
-GraphSearchAlgorithms
+
 Instructions:
 
 If running from the command line, provide the filename (ex: test.txt) as the first argument.
